@@ -69,19 +69,17 @@ export async function searchSymbol(query) {
 export async function getBatchQuotes(symbols) {
   const joined = symbols.join(',')
   const key = `batch:${joined}`
-  const data = await fetchWithCache(key, `${BASE_URL}/price?symbol=${joined}&apikey=${API_KEY}`)
-  // /price returns { AAPL: { price: "..." }, TSLA: { price: "..." } }
-  // Normalize into array of quote-like objects so existing consumers don't break.
+  const data = await fetchWithCache(key, `${BASE_URL}/quote?symbol=${joined}&apikey=${API_KEY}`)
+  // /quote with multiple symbols returns { AAPL: { close, percent_change, ... }, TSLA: {...} }
+  // Single symbol returns the quote object directly.
   if (data && typeof data === 'object' && !data.code) {
-    const entries = Object.entries(data)
-    if (entries.length > 0 && entries[0][1]?.price !== undefined) {
-      return entries.map(([symbol, val]) => ({
-        symbol,
-        close: val.price,
-        price: val.price,
-        percent_change: '0',
-        change: '0',
-      }))
+    const first = Object.values(data)[0]
+    if (first && typeof first === 'object' && 'close' in first) {
+      return Object.entries(data).map(([symbol, q]) => ({ symbol, ...q }))
+    }
+    // Single symbol response — wrap it
+    if ('close' in data) {
+      return [{ symbol: symbols[0], ...data }]
     }
   }
   return data
