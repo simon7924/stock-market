@@ -46,6 +46,17 @@ export default function StockDetails() {
           date: v.datetime,
           price: parseFloat(v.close),
         })).reverse())
+      } else if (ts.code === 429 || ts.status === 'error') {
+        // Rate limited — retry once after 15s
+        setTimeout(async () => {
+          const retry = await getTimeSeries(symbol, interval, 60)
+          if (retry.values) {
+            setSeries(retry.values.map(v => ({
+              date: v.datetime,
+              price: parseFloat(v.close),
+            })).reverse())
+          }
+        }, 15000)
       }
     } catch(e) { console.error(e) }
     setLoading(false)
@@ -136,10 +147,10 @@ export default function StockDetails() {
               {/* Info cards */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
                 {[
-                  { label: 'Market Cap', value: quote?.market_cap ? `$${(quote.market_cap/1e9).toFixed(1)}B` : '—' },
+                  { label: '52W High', value: quote?.fifty_two_week?.high ? `$${parseFloat(quote.fifty_two_week.high).toFixed(2)}` : '—' },
+                  { label: '52W Low', value: quote?.fifty_two_week?.low ? `$${parseFloat(quote.fifty_two_week.low).toFixed(2)}` : '—' },
                   { label: 'Day High', value: quote?.high ? `$${parseFloat(quote.high).toFixed(2)}` : '—' },
                   { label: 'Day Low', value: quote?.low ? `$${parseFloat(quote.low).toFixed(2)}` : '—' },
-                  { label: 'Risk Level', value: 'Medium' },
                 ].map(info => (
                   <div key={info.label} className="card" style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>{info.label}</div>

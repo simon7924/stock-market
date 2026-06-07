@@ -75,7 +75,10 @@ export async function getBatchQuotes(symbols) {
   if (data && typeof data === 'object' && !data.code) {
     const first = Object.values(data)[0]
     if (first && typeof first === 'object' && 'close' in first) {
-      return Object.entries(data).map(([symbol, q]) => ({ symbol, ...q }))
+      const result = Object.entries(data).map(([sym, q]) => ({ symbol: sym, ...q }))
+      // Seed individual quote cache so StockDetails doesn't re-fetch
+      result.forEach(q => toCache(`quote:${q.symbol}`, q))
+      return result
     }
     // Single symbol response — wrap it
     if ('close' in data) {
