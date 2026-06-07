@@ -27,7 +27,7 @@ html, body, #root {
   height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Times New Roman', Times, serif;
+  font-family: Arial, sans-serif;
   font-size: 14px;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
