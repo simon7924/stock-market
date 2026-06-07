@@ -29,7 +29,7 @@ html, body, #root {
   color: var(--text);
   font-family: Arial, sans-serif;
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 300;
   -webkit-font-smoothing: antialiased;
 }
 
