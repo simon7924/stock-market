@@ -5,9 +5,9 @@ import { supabase } from '../lib/supabase'
 
 const OPTIONS = [
   { amount: 1000, label: 'Beginner' },
-  { amount: 5000, label: 'Casual' },
+  { amount: 2500, label: 'Casual' },
+  { amount: 5000, label: 'Moderate' },
   { amount: 10000, label: 'Recommended' },
-  { amount: 25000, label: 'High Capital' },
 ]
 
 export default function CreatePortfolio() {
@@ -20,25 +20,26 @@ export default function CreatePortfolio() {
   const [loading, setLoading] = useState(false)
 
   const finalBalance = custom ? Number(custom) : selected
-  const isCustomValid = !custom || (Number(custom) >= 500 && Number(custom) <= 50000)
-  const canProceed = checked && isCustomValid && finalBalance >= 500
+  const isCustomValid = !custom || (Number(custom) >= 500 && Number(custom) <= 10000)
+  const canProceed = checked && isCustomValid && finalBalance >= 500 && finalBalance <= 10000
 
   function handleCustomChange(val) {
     setCustom(val)
     setSelected(null)
-    if (val && (Number(val) < 500 || Number(val) > 50000)) {
-      setCustomError('Amount must be between $500 and $50,000')
+    if (val && (Number(val) < 500 || Number(val) > 10000)) {
+      setCustomError('Amount must be between $500 and $10,000')
     } else {
       setCustomError('')
     }
   }
 
   async function handleCreate() {
+    const safeBalance = Math.min(finalBalance, 10000)
     setLoading(true)
     try {
       const { data } = await supabase
         .from('profiles')
-        .update({ starting_balance: finalBalance, current_balance: finalBalance })
+        .update({ starting_balance: safeBalance, current_balance: safeBalance })
         .eq('id', user.id)
         .select()
         .single()
@@ -127,7 +128,7 @@ export default function CreatePortfolio() {
         <div style={{ fontSize: 13, color: '#cbd5e1', marginBottom: 8, fontWeight: 500 }}>Custom Amount</div>
         <input
           className={`input ${customError ? 'error' : ''}`}
-          placeholder="$500 - $50,000"
+          placeholder="$500 - $10,000"
           type="number"
           value={custom}
           onChange={e => handleCustomChange(e.target.value)}
