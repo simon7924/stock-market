@@ -84,7 +84,9 @@ export default function Portfolio() {
             <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Holdings</h2>
             {holdings.length === 0 ? (
               <div className="card" style={{ textAlign: 'center', padding: 48, color: 'var(--text-muted)' }}>
-                <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
+                <div style={{ marginBottom: 12, color: 'var(--text-muted)', display: 'flex', justifyContent: 'center' }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                </div>
                 <div>No stocks owned yet. Go to the market to buy your first shares.</div>
               </div>
             ) : (

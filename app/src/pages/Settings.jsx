@@ -205,7 +205,10 @@ export default function Settings() {
 
               {active === 'Danger Zone' && (
                 <div>
-                  <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, color: 'var(--red)' }}>⚠ Danger Zone</h2>
+                  <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, color: 'var(--red)', display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Danger Zone
+                  </h2>
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 24 }}>These actions permanently affect your account.</p>
                   <div style={{
                     background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)',
@@ -231,7 +234,7 @@ export default function Settings() {
       {/* Reset modal */}
       {showReset && (
         <Modal onClose={() => { setShowReset(false); setResetInput('') }} danger unclosable>
-          <ModalHeader title="⚠ Reset Portfolio?" subtitle="This action permanently deletes your portfolio and cannot be undone." />
+          <ModalHeader title="Reset Portfolio?" subtitle="This action permanently deletes your portfolio and cannot be undone." />
           <WarningBox
             title="You are about to permanently erase:"
             text="Your balance · Your stocks · Transaction history · Leaderboard progress"

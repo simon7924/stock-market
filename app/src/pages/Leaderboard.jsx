@@ -42,9 +42,9 @@ export default function Leaderboard() {
   const podiumOrder = top3.length >= 3 ? [top3[1], top3[0], top3[2]] : top3
 
   const podiumStyles = [
-    { height: 110, border: 'var(--silver)', label: '2nd', medal: '🥈', color: 'var(--silver)' },
-    { height: 140, border: 'var(--gold)',   label: '1st', medal: '🥇', color: 'var(--gold)', crown: true },
-    { height: 110, border: 'var(--bronze)', label: '3rd', medal: '🥉', color: 'var(--bronze)' },
+    { height: 110, border: 'var(--silver)', label: '2nd', rank: 2, color: 'var(--silver)' },
+    { height: 140, border: 'var(--gold)',   label: '1st', rank: 1, color: 'var(--gold)', crown: true },
+    { height: 110, border: 'var(--bronze)', label: '3rd', rank: 3, color: 'var(--bronze)' },
   ]
 
   return (
@@ -96,7 +96,7 @@ export default function Leaderboard() {
                     const badge = getBadge(player.growth)
                     return (
                       <div key={player.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 160 }}>
-                        {style.crown && <div style={{ fontSize: 28, marginBottom: 4 }}>👑</div>}
+                        {style.crown && <div style={{ marginBottom: 4, color: 'var(--gold)' }}><svg width="24" height="24" viewBox="0 0 24 24" fill="var(--gold)" stroke="var(--gold)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h20M4 20l2-8 6 4 6-4 2 8"/><circle cx="12" cy="8" r="2"/></svg></div>}
                         <div style={{
                           width: 52, height: 52, borderRadius: '50%', marginBottom: 8,
                           background: `linear-gradient(135deg, ${style.color}44, ${style.color}22)`,
@@ -118,7 +118,13 @@ export default function Leaderboard() {
                           borderBottom: 'none',
                           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 12,
                         }}>
-                          <div style={{ fontSize: 28 }}>{style.medal}</div>
+                          <div style={{ color: style.color, marginBottom: 2 }}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              {style.rank === 1 && <><circle cx="12" cy="8" r="6"/><path d="M12 14v6M9 20h6"/></>}
+                              {style.rank === 2 && <><circle cx="12" cy="8" r="6"/><path d="M12 14v6M9 20h6"/><line x1="9" y1="14" x2="9" y2="14"/></>}
+                              {style.rank === 3 && <><circle cx="12" cy="8" r="6"/><path d="M12 14v6M9 20h6"/></>}
+                            </svg>
+                          </div>
                           <div style={{ fontSize: 20, fontWeight: 700, color: style.color }}>{style.label}</div>
                         </div>
                       </div>

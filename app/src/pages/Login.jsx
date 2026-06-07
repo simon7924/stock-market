@@ -92,7 +92,10 @@ export default function Login() {
               background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
               borderRadius: 6, padding: 10, fontSize: 12,
             }}>
-              <div style={{ fontWeight: 600, color: '#fca5a5', marginBottom: 4 }}>⚠ Progress will NOT save.</div>
+              <div style={{ fontWeight: 600, color: '#fca5a5', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Progress will NOT save.
+              </div>
               <div style={{ color: '#fca5a5' }}>Refreshing or closing the page will erase your portfolio.</div>
             </div>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -130,7 +133,7 @@ export default function Login() {
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {['Save progress', 'Portfolio history', 'Leaderboards', 'Long-term growth tracking'].map(f => (
                   <li key={f} style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', gap: 6 }}>
-                    <span style={{ color: 'var(--green)' }}>✔</span> {f}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> {f}
                   </li>
                 ))}
               </ul>
@@ -201,7 +204,7 @@ export default function Login() {
               background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
               borderRadius: 6, padding: 10, marginBottom: 20, fontSize: 12, color: '#fca5a5',
             }}>
-              ⚠ No data will be saved. Leaderboard is unavailable in guest mode.
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> No data will be saved. Leaderboard is unavailable in guest mode.</span>
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button className="btn btn-secondary" onClick={() => setShowGuestConfirm(false)}>Cancel</button>

@@ -30,7 +30,7 @@ export default function History() {
 
           {/* Filter bar */}
           <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-            <input className="input" placeholder="🔍  Search symbol..." value={search}
+            <input className="input" placeholder="Search symbol..." value={search}
               onChange={e => setSearch(e.target.value)} style={{ width: 180, height: 38, fontSize: 13 }} />
             {['ALL','BUY','SELL'].map(f => (
               <button key={f} onClick={() => setFilter(f)}
@@ -48,7 +48,9 @@ export default function History() {
           {/* Transaction cards */}
           {filtered.length === 0 ? (
             <div className="card" style={{ textAlign: 'center', padding: 48, color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
+              <div style={{ marginBottom: 12, color: 'var(--text-muted)', display: 'flex', justifyContent: 'center' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+              </div>
               <div>No transactions yet. Start trading to see your history.</div>
             </div>
           ) : (

@@ -1,10 +1,23 @@
 import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 
+const TopicIcons = {
+  stock:          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+  risk:           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+  diversification:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20"/></svg>,
+  compound:       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+}
+
+const AchievementIcons = {
+  target: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+  briefcase: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>,
+  layers: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>,
+}
+
 const TOPICS = [
   {
     id: 'stock',
-    icon: '📈',
+    icon: null,
     title: 'What Is a Stock?',
     difficulty: 'Beginner',
     description: 'Learn how owning shares gives you part ownership in a company.',
@@ -19,7 +32,7 @@ const TOPICS = [
   },
   {
     id: 'risk',
-    icon: '🛡',
+    icon: null,
     title: 'Understanding Risk',
     difficulty: 'Beginner',
     description: 'What risk means, how it relates to reward, and the low/medium/high risk scale.',
@@ -34,7 +47,7 @@ const TOPICS = [
   },
   {
     id: 'diversification',
-    icon: '🥧',
+    icon: null,
     title: 'Diversification',
     difficulty: 'Intermediate',
     description: 'Why spreading investments across multiple stocks reduces risk and protects against losses.',
@@ -49,7 +62,7 @@ const TOPICS = [
   },
   {
     id: 'compound',
-    icon: '💰',
+    icon: null,
     title: 'Compound Growth',
     difficulty: 'Intermediate',
     description: 'How money grows over time when returns are reinvested, and why starting early matters.',
@@ -120,7 +133,7 @@ export default function Learn() {
                     onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'translateY(0)' }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                      <div style={{ fontSize: 28 }}>{topic.icon}</div>
+                      <div style={{ color: 'var(--blue)', opacity: 0.9 }}>{TopicIcons[topic.id]}</div>
                       <span className={`badge ${isIntermediate ? 'badge-intermediate' : 'badge-beginner'}`}>
                         {topic.difficulty}
                       </span>
@@ -199,15 +212,15 @@ export default function Learn() {
             <div className="card-panel">
               <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Achievements</div>
               {[
-                { icon: '🎯', label: 'First Lesson', earned: Object.keys(progress).length > 0 },
-                { icon: '💼', label: 'First Investment', earned: false },
-                { icon: '🏗', label: 'Portfolio Builder', earned: false },
+                { icon: AchievementIcons.target, label: 'First Lesson', earned: Object.keys(progress).length > 0 },
+                { icon: AchievementIcons.briefcase, label: 'First Investment', earned: false },
+                { icon: AchievementIcons.layers, label: 'Portfolio Builder', earned: false },
               ].map(a => (
                 <div key={a.label} style={{
                   display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0',
                   opacity: a.earned ? 1 : 0.4,
                 }}>
-                  <span style={{ fontSize: 18 }}>{a.icon}</span>
+                  <span style={{ color: a.earned ? 'var(--blue)' : 'currentColor' }}>{a.icon}</span>
                   <span style={{ fontSize: 12, color: a.earned ? 'var(--text)' : 'var(--text-muted)' }}>{a.label}</span>
                   {a.earned && <span style={{ marginLeft: 'auto', color: 'var(--green)', fontSize: 12 }}>✓</span>}
                 </div>
@@ -215,7 +228,10 @@ export default function Learn() {
             </div>
 
             <div className="card-panel">
-              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>💡 Daily Tip</div>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Daily Tip
+              </div>
               <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                 Investing small amounts consistently can grow significantly over time through compound growth.
               </p>
@@ -228,9 +244,11 @@ export default function Learn() {
       {activeTopic && (
         <div className="modal-overlay" onClick={closeTopic}>
           <div className="modal modal-lg" onClick={e => e.stopPropagation()} style={{ maxHeight: '85vh', overflow: 'auto' }}>
-            <button onClick={closeTopic} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: 20, cursor: 'pointer' }}>✕</button>
+            <button onClick={closeTopic} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: 20, cursor: 'pointer' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-              <span style={{ fontSize: 32 }}>{activeTopic.icon}</span>
+              <span style={{ color: 'var(--blue)' }}>{TopicIcons[activeTopic.id]}</span>
               <div>
                 <h2 style={{ fontSize: 22, fontWeight: 700 }}>{activeTopic.title}</h2>
                 <span className={`badge ${activeTopic.difficulty === 'Intermediate' ? 'badge-intermediate' : 'badge-beginner'}`}>{activeTopic.difficulty}</span>
