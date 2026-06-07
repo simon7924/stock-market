@@ -60,8 +60,12 @@ export default function Login() {
             <div style={{
               width: 48, height: 48, borderRadius: 6,
               background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24,
-            }}>📈</div>
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
             <span style={{ fontSize: 28, fontWeight: 700 }}>StockSim</span>
           </div>
           <h1 style={{ fontSize: 36, fontWeight: 700, lineHeight: 1.2, marginBottom: 12 }}>

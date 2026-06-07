@@ -121,8 +121,9 @@ export default function Dashboard() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             {!marketOpen && (
-              <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--card)', padding: '4px 10px', borderRadius: 4 }}>
-                🔴 Market Closed
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--card)', padding: '4px 10px', borderRadius: 4, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                <svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="var(--red)"/></svg>
+                Market Closed
               </span>
             )}
             {isGuest && (
@@ -177,7 +178,7 @@ export default function Dashboard() {
                 <h2 style={{ fontSize: 16, fontWeight: 700 }}>Popular Stocks</h2>
                 <div style={{ position: 'relative' }} ref={searchRef}>
                   <input
-                    className="input" placeholder="🔍  Search stocks..."
+                    className="input" placeholder="Search stocks..."
                     value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                     style={{ width: 220, height: 36, fontSize: 13 }}
                     onFocus={() => searchResults.length && setShowDropdown(true)}
