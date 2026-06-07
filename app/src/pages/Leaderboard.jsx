@@ -68,7 +68,7 @@ export default function Leaderboard() {
                   background: filter === f ? 'var(--blue)' : 'transparent',
                   border: '1px solid var(--border)',
                   color: filter === f ? 'white' : 'var(--text-secondary)',
-                  borderRadius: 10,
+                  borderRadius: 6,
                   boxShadow: filter === f ? '0 0 10px var(--blue-glow)' : 'none',
                 }}>{f}</button>
             ))}
@@ -112,7 +112,7 @@ export default function Leaderboard() {
                           +{player.growth.toFixed(1)}%
                         </div>
                         <div style={{
-                          width: '100%', height: style.height, borderRadius: '8px 8px 0 0',
+                          width: '100%', height: style.height, borderRadius: '4px 4px 0 0',
                           background: `linear-gradient(180deg, ${style.color}22, ${style.color}11)`,
                           border: `1px solid ${style.color}`,
                           borderBottom: 'none',
@@ -143,7 +143,7 @@ export default function Leaderboard() {
                       return (
                         <div key={player.id} style={{
                           display: 'flex', alignItems: 'center', gap: 14,
-                          padding: '12px 16px', borderRadius: 10,
+                          padding: '12px 16px', borderRadius: 6,
                           background: isMe ? 'rgba(59,130,246,0.08)' : 'var(--card)',
                           border: isMe ? '1px solid rgba(59,130,246,0.3)' : '1px solid var(--border)',
                           boxShadow: isMe ? '0 0 12px rgba(59,130,246,0.1)' : 'none',

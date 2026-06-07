@@ -48,7 +48,7 @@ export default function Settings() {
                 <button key={cat} onClick={() => setActive(cat)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '10px 14px', borderRadius: 10, textAlign: 'left',
+                    padding: '10px 14px', borderRadius: 6, textAlign: 'left',
                     background: active === cat ? (cat === 'Danger Zone' ? 'rgba(239,68,68,0.1)' : 'rgba(59,130,246,0.15)') : 'transparent',
                     color: active === cat ? (cat === 'Danger Zone' ? 'var(--red)' : 'var(--blue)') : 'var(--text-secondary)',
                     border: active === cat ? `1px solid ${cat === 'Danger Zone' ? 'rgba(239,68,68,0.3)' : 'rgba(59,130,246,0.3)'}` : '1px solid transparent',
@@ -209,7 +209,7 @@ export default function Settings() {
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 24 }}>These actions permanently affect your account.</p>
                   <div style={{
                     background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)',
-                    borderRadius: 12, padding: 20,
+                    borderRadius: 6, padding: 20,
                   }}>
                     <div style={{ fontWeight: 700, marginBottom: 6 }}>Reset Portfolio</div>
                     <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>

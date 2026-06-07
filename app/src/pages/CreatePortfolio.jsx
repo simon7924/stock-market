@@ -66,7 +66,7 @@ export default function CreatePortfolio() {
 
       <div style={{
         width: '100%', maxWidth: 520,
-        background: '#151922', borderRadius: 18, padding: 28,
+        background: '#151922', borderRadius: 8, padding: 28,
         border: '1px solid rgba(255,255,255,0.06)',
         boxShadow: '0 20px 60px rgba(0,0,0,0.6)', zIndex: 1,
       }}>
@@ -95,7 +95,7 @@ export default function CreatePortfolio() {
                 key={opt.amount}
                 onClick={() => { setSelected(opt.amount); setCustom(''); setCustomError('') }}
                 style={{
-                  height: 70, borderRadius: 12, padding: 12, cursor: 'pointer',
+                  height: 70, borderRadius: 6, padding: 12, cursor: 'pointer',
                   background: isActive ? '#202a3a' : '#1b2230',
                   border: isActive ? '2px solid #3b82f6' : '1px solid rgba(255,255,255,0.06)',
                   textAlign: 'left', position: 'relative',
@@ -139,7 +139,7 @@ export default function CreatePortfolio() {
         {/* Warning */}
         <div style={{
           background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
-          borderRadius: 12, padding: 12, marginTop: 18,
+          borderRadius: 6, padding: 12, marginTop: 18,
         }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: '#fca5a5', marginBottom: 4 }}>Important</div>
           <div style={{ fontSize: 12, color: '#fca5a5' }}>
@@ -164,7 +164,7 @@ export default function CreatePortfolio() {
         {/* Button */}
         <button
           className="btn btn-primary"
-          style={{ width: '100%', height: 48, marginTop: 20, borderRadius: 12, fontSize: 15 }}
+          style={{ width: '100%', height: 48, marginTop: 20, borderRadius: 6, fontSize: 15 }}
           disabled={!canProceed || loading}
           onClick={handleCreate}
         >

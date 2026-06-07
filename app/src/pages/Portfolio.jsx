@@ -56,7 +56,7 @@ export default function Portfolio() {
         {/* Performance banner */}
         <div style={{
           background: 'linear-gradient(135deg, #1e3a5f, #162032)',
-          borderRadius: 16, padding: '24px 32px', marginBottom: 24,
+          borderRadius: 8, padding: '24px 32px', marginBottom: 24,
           display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
           border: '1px solid rgba(59,130,246,0.2)',
         }}>
@@ -162,7 +162,7 @@ export default function Portfolio() {
                     ))}
                   </Pie>
                   <Tooltip formatter={v => `$${v.toFixed(2)}`}
-                    contentStyle={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
+                    contentStyle={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 4, fontSize: 12 }} />
                 </PieChart>
                 <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {pieData.map((d, i) => {

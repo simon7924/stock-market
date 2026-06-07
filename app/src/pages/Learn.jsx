@@ -113,7 +113,7 @@ export default function Learn() {
                   <button key={topic.id} onClick={() => openTopic(topic)}
                     style={{
                       background: 'var(--card)', border: '1px solid var(--border)',
-                      borderRadius: 14, padding: 20, textAlign: 'left', cursor: 'pointer',
+                      borderRadius: 6, padding: 20, textAlign: 'left', cursor: 'pointer',
                       transition: 'all 0.2s', color: 'var(--text)',
                     }}
                     onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--blue)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
@@ -257,7 +257,7 @@ export default function Learn() {
                   }
                   return (
                     <button key={i} onClick={() => setQuizAnswer(i)}
-                      style={{ padding: '10px 14px', borderRadius: 8, background: bg, border: `1px solid ${border}`, color: 'var(--text)', textAlign: 'left', fontSize: 13, cursor: 'pointer', transition: 'all 0.15s' }}>
+                      style={{ padding: '10px 14px', borderRadius: 4, background: bg, border: `1px solid ${border}`, color: 'var(--text)', textAlign: 'left', fontSize: 13, cursor: 'pointer', transition: 'all 0.15s' }}>
                       {opt}
                     </button>
                   )

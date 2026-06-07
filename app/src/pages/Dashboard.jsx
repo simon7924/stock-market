@@ -121,12 +121,12 @@ export default function Dashboard() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             {!marketOpen && (
-              <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--card)', padding: '4px 10px', borderRadius: 20 }}>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--card)', padding: '4px 10px', borderRadius: 4 }}>
                 🔴 Market Closed
               </span>
             )}
             {isGuest && (
-              <span style={{ fontSize: 11, color: '#fb923c', background: 'rgba(249,115,22,0.1)', padding: '4px 10px', borderRadius: 20, border: '1px solid rgba(249,115,22,0.2)' }}>
+              <span style={{ fontSize: 11, color: '#fb923c', background: 'rgba(249,115,22,0.1)', padding: '4px 10px', borderRadius: 4, border: '1px solid rgba(249,115,22,0.2)' }}>
                 Guest Session
               </span>
             )}
@@ -187,7 +187,7 @@ export default function Dashboard() {
                     <div style={{
                       position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
                       background: 'var(--panel)', border: '1px solid var(--border)',
-                      borderRadius: 10, marginTop: 4, overflow: 'hidden',
+                      borderRadius: 6, marginTop: 4, overflow: 'hidden',
                     }}>
                       {searchResults.map(r => (
                         <button key={r.symbol} onClick={() => navigate(`/stock/${r.symbol}`)}
@@ -223,7 +223,7 @@ export default function Dashboard() {
                         onClick={() => setPreview({ symbol: sym, name: q?.name || sym })}
                         style={{
                           display: 'flex', alignItems: 'center', gap: 16,
-                          padding: '12px 16px', borderRadius: 10,
+                          padding: '12px 16px', borderRadius: 6,
                           background: 'var(--card)', border: '1px solid var(--border)',
                           cursor: 'pointer', transition: 'border-color 0.15s',
                         }}

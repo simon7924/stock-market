@@ -40,7 +40,7 @@ export default function History() {
                   background: filter === f ? 'var(--blue)' : 'transparent',
                   border: '1px solid var(--border)',
                   color: filter === f ? 'white' : 'var(--text-secondary)',
-                  borderRadius: 10,
+                  borderRadius: 6,
                 }}>{f}</button>
             ))}
           </div>

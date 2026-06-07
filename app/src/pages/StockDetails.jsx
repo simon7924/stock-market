@@ -118,7 +118,7 @@ export default function StockDetails() {
                         background: interval === k ? 'var(--blue)' : 'transparent',
                         border: '1px solid var(--border)',
                         color: interval === k ? 'white' : 'var(--text-secondary)',
-                        borderRadius: 8,
+                        borderRadius: 4,
                       }}>
                       {v}
                     </button>
@@ -132,7 +132,7 @@ export default function StockDetails() {
                     <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} tickLine={false} axisLine={false}
                       domain={['auto','auto']} tickFormatter={v => `$${v}`} width={60} />
                     <Tooltip
-                      contentStyle={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }}
+                      contentStyle={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 4, fontSize: 12 }}
                       labelStyle={{ color: 'var(--text-secondary)' }}
                       formatter={v => [`$${v.toFixed(2)}`, 'Price']}
                     />
@@ -162,7 +162,7 @@ export default function StockDetails() {
               {/* Company description */}
               <div className="card" style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                 <div style={{
-                  width: 48, height: 48, borderRadius: 10, flexShrink: 0,
+                  width: 48, height: 48, borderRadius: 6, flexShrink: 0,
                   background: `hsl(${symbol.charCodeAt(0) * 20},60%,30%)`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontWeight: 700, fontSize: 18, color: 'white',

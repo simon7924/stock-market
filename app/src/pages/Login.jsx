@@ -58,7 +58,7 @@ export default function Login() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
             <div style={{
-              width: 48, height: 48, borderRadius: 12,
+              width: 48, height: 48, borderRadius: 6,
               background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24,
             }}>📈</div>
@@ -86,7 +86,7 @@ export default function Login() {
             </div>
             <div style={{
               background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
-              borderRadius: 10, padding: 10, fontSize: 12,
+              borderRadius: 6, padding: 10, fontSize: 12,
             }}>
               <div style={{ fontWeight: 600, color: '#fca5a5', marginBottom: 4 }}>⚠ Progress will NOT save.</div>
               <div style={{ color: '#fca5a5' }}>Refreshing or closing the page will erase your portfolio.</div>
@@ -155,7 +155,7 @@ export default function Login() {
               {error && (
                 <div style={{
                   background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                  borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#fca5a5',
+                  borderRadius: 6, padding: '8px 12px', fontSize: 12, color: '#fca5a5',
                 }}>{error}</div>
               )}
 
@@ -195,7 +195,7 @@ export default function Login() {
             </p>
             <div style={{
               background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
-              borderRadius: 10, padding: 10, marginBottom: 20, fontSize: 12, color: '#fca5a5',
+              borderRadius: 6, padding: 10, marginBottom: 20, fontSize: 12, color: '#fca5a5',
             }}>
               ⚠ No data will be saved. Leaderboard is unavailable in guest mode.
             </div>

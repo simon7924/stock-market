@@ -55,7 +55,7 @@ export function WarningBox({ title, text }) {
   return (
     <div style={{
       background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
-      borderRadius: 12, padding: 12, marginBottom: 16,
+      borderRadius: 6, padding: 12, marginBottom: 16,
     }}>
       <div style={{ fontSize: 13, fontWeight: 600, color: '#fca5a5', marginBottom: 4 }}>{title}</div>
       <div style={{ fontSize: 12, color: '#fca5a5' }}>{text}</div>

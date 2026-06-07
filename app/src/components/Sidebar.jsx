@@ -26,7 +26,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 8px 24px' }}>
         <div style={{
-          width: 32, height: 32, borderRadius: 8,
+          width: 32, height: 32, borderRadius: 6,
           background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 16, flexShrink: 0,
@@ -48,7 +48,7 @@ export default function Sidebar() {
               }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 12px', borderRadius: 10,
+                padding: '10px 12px', borderRadius: 6,
                 background: active ? 'var(--blue)' : 'transparent',
                 color: active ? 'white' : locked ? 'var(--text-muted)' : 'var(--text-secondary)',
                 fontWeight: active ? 600 : 400,
@@ -72,7 +72,7 @@ export default function Sidebar() {
         {isGuest && (
           <div style={{
             background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.25)',
-            borderRadius: 8, padding: '6px 10px', marginBottom: 10, fontSize: 11,
+            borderRadius: 4, padding: '6px 10px', marginBottom: 10, fontSize: 11,
             color: '#fb923c', textAlign: 'center',
           }}>
             Guest Session
