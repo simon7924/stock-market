@@ -12,7 +12,7 @@ import Settings from './pages/Settings'
 
 function ProtectedRoute({ children }) {
   const { user, isGuest, loading } = useAuth()
-  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0f1115', color: 'white', fontFamily: "Arial, sans-serif" }}>Loading...</div>
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0f1115', color: 'white', fontFamily: "'Inter', Arial, sans-serif" }}>Loading...</div>
   if (!user && !isGuest) return <Navigate to="/" replace />
   return children
 }
