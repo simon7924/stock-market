@@ -22,6 +22,7 @@ export default function Backtest() {
   const [startDate, setStartDate] = useState('')
   const [loadingDates, setLoadingDates] = useState(false)
   const [earliestDate, setEarliestDate] = useState('')
+  const [dateError, setDateError] = useState('')
   const searchTimer = useRef(null)
 
   // Session state
@@ -159,6 +160,7 @@ export default function Backtest() {
     setSearchResults([])
     setStartDate('')
     setEarliestDate('')
+    setDateError('')
     setCash(10000)
     setShares(0)
     setAvgBuyPrice(0)
@@ -293,17 +295,34 @@ export default function Backtest() {
                 You'll start with $10,000 in virtual cash and can jump forward to any future date.
               </div>
               <input
-                className="input"
+                className={`input${dateError ? ' error' : ''}`}
                 type="date"
                 value={startDate}
                 min={earliestDate}
                 max={new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0]}
-                onChange={e => setStartDate(e.target.value)}
-                style={{ marginBottom: 16 }}
+                onChange={e => {
+                  const val = e.target.value
+                  setStartDate(val)
+                  if (val && earliestDate && val < earliestDate) {
+                    setDateError(`${stock.symbol} has no data before ${earliestDate}. The earliest available date is ${earliestDate}.`)
+                  } else {
+                    setDateError('')
+                  }
+                }}
+                style={{ marginBottom: dateError ? 8 : 16 }}
               />
+              {dateError && (
+                <div style={{
+                  fontSize: 12, color: 'var(--red)', marginBottom: 16,
+                  display: 'flex', alignItems: 'flex-start', gap: 6,
+                }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  {dateError}
+                </div>
+              )}
               <div style={{ display: 'flex', gap: 10 }}>
                 <button className="btn btn-secondary" style={{ flex: 1 }} onClick={resetSession}>Back</button>
-                <button className="btn btn-primary" style={{ flex: 2 }} disabled={!startDate || jumping} onClick={startSession}>
+                <button className="btn btn-primary" style={{ flex: 2 }} disabled={!startDate || !!dateError || jumping} onClick={startSession}>
                   {jumping ? 'Loading...' : 'Start Backtest'}
                 </button>
               </div>
