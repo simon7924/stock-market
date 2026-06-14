@@ -56,7 +56,17 @@ export default function Dashboard() {
     if (!searchQuery) { setSearchResults([]); setShowDropdown(false); return }
     const t = setTimeout(async () => {
       const res = await searchSymbol(searchQuery)
-      setSearchResults(res.data?.slice(0,6) || [])
+      const US_EXCHANGES = ['NASDAQ', 'NYSE', 'NYSE ARCA', 'NYSE MKT', 'BATS']
+      const all = (res.data || []).filter(r => r.currency === 'USD')
+      const seen = new Map()
+      for (const r of all) {
+        if (!seen.has(r.symbol)) {
+          seen.set(r.symbol, r)
+        } else if (US_EXCHANGES.includes(r.exchange) && !US_EXCHANGES.includes(seen.get(r.symbol).exchange)) {
+          seen.set(r.symbol, r)
+        }
+      }
+      setSearchResults([...seen.values()].slice(0, 6))
       setShowDropdown(true)
     }, 400)
     return () => clearTimeout(t)
