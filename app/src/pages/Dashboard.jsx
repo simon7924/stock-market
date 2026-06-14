@@ -106,14 +106,18 @@ export default function Dashboard() {
     }
   }
 
-  const topGainer = DEFAULT_SYMBOLS.reduce((best, sym) => {
-    const chg = getChange(getQuote(sym))
-    return chg > getChange(getQuote(best)) ? sym : best
-  }, DEFAULT_SYMBOLS[0])
-
   const portfolioGrowth = profile
     ? ((profile.current_balance - profile.starting_balance) / profile.starting_balance) * 100
     : 0
+
+  const totalInvestedValue = holdings.reduce((sum, h) => {
+    const q = quotes[h.symbol]
+    const price = q ? parseFloat(q.close || q.price || 0) : 0
+    return sum + h.shares * price
+  }, 0)
+  const totalCost = holdings.reduce((sum, h) => sum + h.shares * h.avg_price, 0)
+  const investedGain = totalInvestedValue - totalCost
+  const totalPortfolioValue = (profile?.current_balance || 0) + totalInvestedValue
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -149,36 +153,63 @@ export default function Dashboard() {
           {/* Main content */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
             {/* Summary cards */}
-            <div className="summary-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
-              {/* Portfolio Value */}
-              <div className="card" style={{ position: 'relative', overflow: 'hidden' }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Portfolio Value</div>
-                <div style={{ fontSize: 28, fontWeight: 700, margin: '6px 0 4px' }}>
-                  ${Number(profile?.current_balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <div className="summary-cards" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+              {/* Portfolio Summary — big card */}
+              <div style={{
+                background: 'linear-gradient(135deg, #1a2e4a 0%, #111827 100%)',
+                border: '1px solid rgba(59,130,246,0.25)',
+                borderRadius: 10, padding: '22px 28px',
+                display: 'flex', gap: 0,
+              }}>
+                {/* Left: main value */}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+                    Total Portfolio
+                  </div>
+                  <div style={{ fontSize: 34, fontWeight: 700, lineHeight: 1.1 }}>
+                    ${totalPortfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{
+                      fontSize: 13, fontWeight: 700,
+                      color: portfolioGrowth >= 0 ? 'var(--green)' : 'var(--red)',
+                      background: portfolioGrowth >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                      padding: '2px 10px', borderRadius: 999, display: 'inline-block',
+                    }}>
+                      {portfolioGrowth >= 0 ? '+' : ''}{portfolioGrowth.toFixed(2)}% all time
+                    </div>
+                  </div>
+                  {isGuest && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 8 }}>Create an account to save progress.</div>}
                 </div>
-                <div style={{ fontSize: 12, color: portfolioGrowth >= 0 ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>
-                  {portfolioGrowth >= 0 ? '+' : ''}{portfolioGrowth.toFixed(2)}% all time
+                {/* Right: breakdown */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, justifyContent: 'center', paddingLeft: 28, borderLeft: '1px solid rgba(255,255,255,0.07)' }}>
+                  {[
+                    { label: 'Cash', val: `$${Number(profile?.current_balance || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}`, color: 'var(--blue)' },
+                    { label: 'Invested', val: `$${totalInvestedValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}`, color: 'var(--text)' },
+                    { label: 'Gain/Loss', val: `${investedGain >= 0 ? '+' : ''}$${Math.abs(investedGain).toFixed(2)}`, color: investedGain >= 0 ? 'var(--green)' : 'var(--red)' },
+                    { label: 'Holdings', val: holdings.length, color: 'var(--text)' },
+                  ].map(s => (
+                    <div key={s.label} style={{ minWidth: 130 }}>
+                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: 0.8 }}>{s.label}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: s.color, marginTop: 1 }}>{s.val}</div>
+                    </div>
+                  ))}
                 </div>
-                {isGuest && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Create an account to save progress.</div>}
               </div>
 
-              {/* Market Trend */}
-              <div className="card">
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Market Trend</div>
-                <div style={{ fontSize: 28, fontWeight: 700, margin: '6px 0 4px', color: 'var(--green)' }}>
-                  {marketOpen ? 'Open' : 'Closed'}
+              {/* Market Status — small card */}
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Market</div>
+                <div>
+                  <div style={{ fontSize: 26, fontWeight: 700, margin: '6px 0 4px', color: marketOpen ? 'var(--green)' : 'var(--text-secondary)' }}>
+                    {marketOpen ? 'Open' : 'Closed'}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                    {marketOpen ? '● Live prices active' : '◌ Last known prices'}
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                  {marketOpen ? '▲ Live prices active' : 'Showing last known prices'}
-                </div>
-              </div>
-
-              {/* Top Gainer */}
-              <div className="card">
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Top Gainer</div>
-                <div style={{ fontSize: 28, fontWeight: 700, margin: '6px 0 4px' }}>{topGainer}</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--green)' }}>
-                  {getChange(getQuote(topGainer)) >= 0 ? '+' : ''}{getChange(getQuote(topGainer)).toFixed(2)}%
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+                  NYSE/NASDAQ hours: 9:30–16:00 ET
                 </div>
               </div>
             </div>

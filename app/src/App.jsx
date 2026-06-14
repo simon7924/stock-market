@@ -9,6 +9,7 @@ import History from './pages/History'
 import Leaderboard from './pages/Leaderboard'
 import Learn from './pages/Learn'
 import Settings from './pages/Settings'
+import Backtest from './pages/Backtest'
 
 function ProtectedRoute({ children }) {
   const { user, isGuest, loading } = useAuth()
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
         <Route path="/learn" element={<ProtectedRoute><Learn /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/backtest" element={<ProtectedRoute><Backtest /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

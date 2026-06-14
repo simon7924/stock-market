@@ -4,9 +4,13 @@ import { useAuth } from '../context/AuthContext'
 import { usePortfolio } from '../context/PortfolioContext'
 import { getBatchQuotes } from '../lib/twelvedata'
 import SellModal from '../components/SellModal'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 
 const COLORS = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899']
+
+function fmt(n, decimals = 2) {
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+}
 
 export default function Portfolio() {
   const { profile } = useAuth()
@@ -31,18 +35,42 @@ export default function Portfolio() {
     return parseFloat(q.close || q.price || 0)
   }
 
-  const totalValue = holdings.reduce((sum, h) => sum + h.shares * getPrice(h.symbol), 0)
+  const cash = profile?.current_balance || 0
+  const totalInvestedValue = holdings.reduce((sum, h) => sum + h.shares * getPrice(h.symbol), 0)
   const totalCost = holdings.reduce((sum, h) => sum + h.shares * h.avg_price, 0)
-  const totalGain = totalValue - totalCost
-  const portfolioTotal = (profile?.current_balance || 0) + totalValue
+  const investedGain = totalInvestedValue - totalCost
+  const investedGainPct = totalCost > 0 ? (investedGain / totalCost) * 100 : 0
+  const portfolioTotal = cash + totalInvestedValue
   const growthPct = profile?.starting_balance
     ? ((portfolioTotal - profile.starting_balance) / profile.starting_balance) * 100
     : 0
 
-  const pieData = holdings.map(h => ({
-    name: h.symbol,
-    value: h.shares * getPrice(h.symbol),
-  })).filter(d => d.value > 0)
+  // Distribution: all percentages are out of total portfolio (cash + holdings)
+  const pieData = [
+    ...holdings.map((h, i) => ({
+      name: h.symbol,
+      value: h.shares * getPrice(h.symbol),
+      color: COLORS[i % COLORS.length],
+      isCash: false,
+    })).filter(d => d.value > 0),
+    { name: 'Cash', value: cash, color: '#64748b', isCash: true },
+  ].filter(d => d.value > 0)
+
+  const bestHolding = holdings.length
+    ? holdings.reduce((best, h) => {
+        const gain = getPrice(h.symbol) - h.avg_price
+        const bestGain = getPrice(best.symbol) - best.avg_price
+        return gain > bestGain ? h : best
+      }, holdings[0])
+    : null
+
+  const worstHolding = holdings.length
+    ? holdings.reduce((worst, h) => {
+        const gain = getPrice(h.symbol) - h.avg_price
+        const worstGain = getPrice(worst.symbol) - worst.avg_price
+        return gain < worstGain ? h : worst
+      }, holdings[0])
+    : null
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -53,29 +81,78 @@ export default function Portfolio() {
           Track your investments and performance.
         </p>
 
-        {/* Performance banner */}
+        {/* Summary banner */}
         <div style={{
-          background: 'linear-gradient(135deg, #1e3a5f, #162032)',
-          borderRadius: 8, padding: '24px 32px', marginBottom: 24,
-          display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+          background: 'linear-gradient(135deg, #1a2e4a 0%, #111827 100%)',
+          borderRadius: 10, padding: '24px 32px', marginBottom: 24,
           border: '1px solid rgba(59,130,246,0.2)',
         }}>
-          <div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Total Portfolio Value</div>
-            <div style={{ fontSize: 32, fontWeight: 700 }}>${portfolioTotal.toLocaleString('en-US', { maximumFractionDigits: 2 })}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0 }}>
+            {[
+              {
+                label: 'Total Value',
+                value: `$${fmt(portfolioTotal)}`,
+                sub: `Started with $${fmt(profile?.starting_balance || 10000)}`,
+                color: 'var(--text)',
+                big: true,
+              },
+              {
+                label: 'All-Time Return',
+                value: `${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(2)}%`,
+                sub: `${growthPct >= 0 ? '+' : ''}$${fmt(Math.abs(portfolioTotal - (profile?.starting_balance || 10000)))} overall`,
+                color: growthPct >= 0 ? 'var(--green)' : 'var(--red)',
+              },
+              {
+                label: 'Invested Gain',
+                value: `${investedGain >= 0 ? '+' : ''}$${fmt(Math.abs(investedGain))}`,
+                sub: `${investedGainPct >= 0 ? '+' : ''}${investedGainPct.toFixed(2)}% on positions`,
+                color: investedGain >= 0 ? 'var(--green)' : 'var(--red)',
+              },
+              {
+                label: 'Cash',
+                value: `$${fmt(cash)}`,
+                sub: `${portfolioTotal > 0 ? ((cash / portfolioTotal) * 100).toFixed(1) : 0}% of portfolio`,
+                color: 'var(--blue)',
+              },
+              {
+                label: 'Positions',
+                value: holdings.length,
+                sub: holdings.length === 0 ? 'Buy your first stock' : `${holdings.reduce((s, h) => s + h.shares, 0)} total shares`,
+                color: 'var(--text)',
+              },
+            ].map((s, i) => (
+              <div key={s.label} style={{
+                paddingLeft: i === 0 ? 0 : 24,
+                borderLeft: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.07)',
+              }}>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 }}>{s.label}</div>
+                <div style={{ fontSize: s.big ? 28 : 20, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{s.sub}</div>
+              </div>
+            ))}
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Invested Gain/Loss</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: totalGain >= 0 ? 'var(--green)' : 'var(--red)' }}>
-              {totalGain >= 0 ? '+' : ''}${totalGain.toFixed(2)}
+
+          {/* Best / worst row */}
+          {bestHolding && (
+            <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 32, fontSize: 12 }}>
+              <div>
+                <span style={{ color: 'rgba(255,255,255,0.45)', marginRight: 8 }}>Best position:</span>
+                <span style={{ fontWeight: 700 }}>{bestHolding.symbol}</span>
+                <span style={{ color: 'var(--green)', marginLeft: 8, fontWeight: 600 }}>
+                  {((getPrice(bestHolding.symbol) - bestHolding.avg_price) / bestHolding.avg_price * 100).toFixed(2)}%
+                </span>
+              </div>
+              {worstHolding && worstHolding.symbol !== bestHolding.symbol && (
+                <div>
+                  <span style={{ color: 'rgba(255,255,255,0.45)', marginRight: 8 }}>Worst position:</span>
+                  <span style={{ fontWeight: 700 }}>{worstHolding.symbol}</span>
+                  <span style={{ color: 'var(--red)', marginLeft: 8, fontWeight: 600 }}>
+                    {((getPrice(worstHolding.symbol) - worstHolding.avg_price) / worstHolding.avg_price * 100).toFixed(2)}%
+                  </span>
+                </div>
+              )}
             </div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>All Time Growth</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: growthPct >= 0 ? 'var(--green)' : 'var(--red)' }}>
-              {growthPct >= 0 ? '+' : ''}{growthPct.toFixed(2)}%
-            </div>
-          </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', gap: 24 }}>
@@ -84,7 +161,7 @@ export default function Portfolio() {
             <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Holdings</h2>
             {holdings.length === 0 ? (
               <div className="card" style={{ textAlign: 'center', padding: 48, color: 'var(--text-muted)' }}>
-                <div style={{ marginBottom: 12, color: 'var(--text-muted)', display: 'flex', justifyContent: 'center' }}>
+                <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: 'var(--text-muted)' }}>
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
                 </div>
                 <div>No stocks owned yet. Go to the market to buy your first shares.</div>
@@ -94,7 +171,9 @@ export default function Portfolio() {
                 {holdings.map(h => {
                   const price = getPrice(h.symbol)
                   const gain = (price - h.avg_price) * h.shares
-                  const gainPct = ((price - h.avg_price) / h.avg_price) * 100
+                  const gainPct = h.avg_price > 0 ? ((price - h.avg_price) / h.avg_price) * 100 : 0
+                  const value = h.shares * price
+                  const pctOfTotal = portfolioTotal > 0 ? (value / portfolioTotal) * 100 : 0
                   return (
                     <div key={h.symbol} className="card" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                       <div style={{
@@ -104,24 +183,29 @@ export default function Portfolio() {
                         fontWeight: 700, fontSize: 14, color: 'white',
                       }}>{h.symbol[0]}</div>
 
-                      <div style={{ flex: 1 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 700 }}>{h.company_name || h.symbol}</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{h.shares} shares</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{h.shares} shares · {pctOfTotal.toFixed(1)}% of portfolio</div>
                       </div>
 
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Avg Buy</div>
-                        <div style={{ fontWeight: 600 }}>${h.avg_price.toFixed(2)}</div>
+                        <div style={{ fontWeight: 600 }}>${fmt(h.avg_price)}</div>
                       </div>
 
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Current</div>
-                        <div style={{ fontWeight: 600 }}>${price.toFixed(2)}</div>
+                        <div style={{ fontWeight: 600 }}>${fmt(price)}</div>
+                      </div>
+
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Value</div>
+                        <div style={{ fontWeight: 600 }}>${fmt(value)}</div>
                       </div>
 
                       <div style={{ textAlign: 'right', minWidth: 90 }}>
                         <div style={{ fontWeight: 700, color: gain >= 0 ? 'var(--green)' : 'var(--red)' }}>
-                          {gain >= 0 ? '+' : ''}${gain.toFixed(2)}
+                          {gain >= 0 ? '+' : ''}${fmt(gain)}
                         </div>
                         <div style={{ fontSize: 12, color: gain >= 0 ? 'var(--green)' : 'var(--red)' }}>
                           {gainPct >= 0 ? '+' : ''}{gainPct.toFixed(1)}%
@@ -143,51 +227,53 @@ export default function Portfolio() {
             <div className="card" style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontWeight: 700 }}>Available Cash</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Not invested</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  Not invested · {portfolioTotal > 0 ? ((cash / portfolioTotal) * 100).toFixed(1) : 0}% of portfolio
+                </div>
               </div>
               <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--blue)' }}>
-                ${Number(profile?.current_balance || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                ${fmt(cash)}
               </div>
             </div>
           </div>
 
-          {/* Pie chart */}
+          {/* Distribution chart */}
           {pieData.length > 0 && (
-            <div style={{ width: 240, flexShrink: 0 }}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Allocation</h2>
-              <div className="card-panel" style={{ padding: 16 }}>
-                <PieChart width={200} height={200}>
-                  <Pie data={pieData} cx={100} cy={100} innerRadius={55} outerRadius={90} dataKey="value" strokeWidth={0}>
-                    {pieData.map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]}
-                        style={{ filter: `drop-shadow(0 0 6px ${COLORS[i % COLORS.length]}88)` }} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={v => `$${v.toFixed(2)}`}
-                    contentStyle={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 4, fontSize: 12 }} />
-                </PieChart>
-                <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {pieData.map((d, i) => {
-                    const total = pieData.reduce((s, x) => s + x.value, 0)
-                    return (
-                      <div key={d.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: COLORS[i % COLORS.length] }} />
-                          <span style={{ fontWeight: 600 }}>{d.name}</span>
-                        </div>
-                        <span style={{ color: 'var(--text-secondary)' }}>{((d.value / total) * 100).toFixed(1)}%</span>
+            <div style={{ width: 260, flexShrink: 0 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Distribution</h2>
+              <div className="card-panel" style={{ padding: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <PieChart width={210} height={210}>
+                    <Pie data={pieData} cx={105} cy={105} innerRadius={58} outerRadius={95} dataKey="value" strokeWidth={0} paddingAngle={2}>
+                      {pieData.map((d, i) => (
+                        <Cell key={d.name} fill={d.color}
+                          style={{ filter: `drop-shadow(0 0 5px ${d.color}99)` }} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(v, name) => [`$${fmt(v)} (${portfolioTotal > 0 ? ((v / portfolioTotal) * 100).toFixed(1) : 0}%)`, name]}
+                      contentStyle={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 4, fontSize: 12 }}
+                    />
+                  </PieChart>
+                </div>
+                <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {pieData.map(d => (
+                    <div key={d.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: d.color, flexShrink: 0 }} />
+                        <span style={{ fontWeight: 600, color: d.isCash ? 'var(--text-secondary)' : 'var(--text)' }}>{d.name}</span>
                       </div>
-                    )
-                  })}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: 6 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--text-muted)' }} />
-                      <span style={{ fontWeight: 600 }}>Cash</span>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
+                          {portfolioTotal > 0 ? ((d.value / portfolioTotal) * 100).toFixed(1) : 0}%
+                        </span>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>${fmt(d.value, 0)}</div>
+                      </div>
                     </div>
-                    <span style={{ color: 'var(--text-secondary)' }}>
-                      {(((profile?.current_balance || 0) / ((profile?.current_balance || 0) + totalValue)) * 100).toFixed(1)}%
-                    </span>
-                  </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border)', fontSize: 11, color: 'var(--text-muted)' }}>
+                  All percentages are out of your total portfolio value.
                 </div>
               </div>
             </div>
