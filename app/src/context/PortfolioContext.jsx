@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 
@@ -64,9 +64,10 @@ export function PortfolioProvider({ children }) {
       return
     }
 
+    const newBalance = profile.current_balance - totalCost
     const { error: balErr } = await supabase
       .from('profiles')
-      .update({ current_balance: profile.current_balance - totalCost })
+      .update({ current_balance: newBalance })
       .eq('id', user.id)
     if (balErr) throw balErr
 
@@ -88,7 +89,7 @@ export function PortfolioProvider({ children }) {
       shares, price_per_share: pricePerShare, total_value: totalCost,
     })
 
-    setProfile(p => ({ ...p, current_balance: p.current_balance - totalCost }))
+    setProfile(p => ({ ...p, current_balance: newBalance }))
     await fetchHoldings()
     await fetchTransactions()
   }
@@ -119,9 +120,10 @@ export function PortfolioProvider({ children }) {
     const existing = holdings.find(h => h.symbol === symbol)
     if (!existing || existing.shares < shares) throw new Error('Not enough shares')
     const gain = (pricePerShare - existing.avg_price) * shares
+    const newBalance = profile.current_balance + totalValue
 
     await supabase.from('profiles')
-      .update({ current_balance: profile.current_balance + totalValue })
+      .update({ current_balance: newBalance })
       .eq('id', user.id)
 
     if (existing.shares === shares) {
@@ -137,7 +139,7 @@ export function PortfolioProvider({ children }) {
       realized_gain: gain,
     })
 
-    setProfile(p => ({ ...p, current_balance: p.current_balance + totalValue }))
+    setProfile(p => ({ ...p, current_balance: newBalance }))
     await fetchHoldings()
     await fetchTransactions()
   }
