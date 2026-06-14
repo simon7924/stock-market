@@ -48,7 +48,19 @@ export default function Backtest() {
       try {
         const res = await fetch(`${BASE_URL}/symbol_search?symbol=${encodeURIComponent(val)}&apikey=${API_KEY}`)
         const data = await res.json()
-        setSearchResults((data.data || []).slice(0, 8).filter(r => r.instrument_type === 'Common Stock' || r.instrument_type === 'ETF'))
+        const US_EXCHANGES = ['NASDAQ', 'NYSE', 'NYSE ARCA', 'NYSE MKT', 'BATS']
+        const filtered = (data.data || [])
+          .filter(r => (r.instrument_type === 'Common Stock' || r.instrument_type === 'ETF') && r.currency === 'USD')
+        // Deduplicate: keep one per symbol, preferring US exchanges
+        const seen = new Map()
+        for (const r of filtered) {
+          if (!seen.has(r.symbol)) {
+            seen.set(r.symbol, r)
+          } else if (US_EXCHANGES.includes(r.exchange) && !US_EXCHANGES.includes(seen.get(r.symbol).exchange)) {
+            seen.set(r.symbol, r)
+          }
+        }
+        setSearchResults([...seen.values()].slice(0, 8))
       } catch { setSearchResults([]) }
       setSearching(false)
     }, 400)
