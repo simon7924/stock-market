@@ -59,9 +59,10 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }
 
-  function enterGuestMode() {
-    setIsGuest(true)
+  async function enterGuestMode() {
+    await supabase.auth.signOut()
     setUser(null)
+    setIsGuest(true)
     setProfile({
       username: `Guest${Math.floor(Math.random() * 9000) + 1000}`,
       current_balance: 10000,
