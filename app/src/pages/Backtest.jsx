@@ -266,7 +266,7 @@ export default function Backtest() {
                 )}
               </div>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 16 }}>
-                Tip: Try AAPL (1980), MSFT (1986), SPY (1993), or TSLA (2010).
+                Tip: Try AAPL, MSFT, SPY, or TSLA. Free API data goes back ~20 years.
               </p>
             </div>
           </div>
@@ -289,10 +289,11 @@ export default function Backtest() {
                 </div>
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                Pick your starting date. Data available from <strong style={{ color: 'var(--text)' }}>{earliestDate}</strong>.
+                Pick your starting date. Earliest available via free API: <strong style={{ color: 'var(--text)' }}>{earliestDate}</strong>.
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
                 You'll start with $10,000 in virtual cash and can jump forward to any future date.
+                Note: free API data is limited to ~5,000 trading days — older history requires a paid plan.
               </div>
               <input
                 className={`input${dateError ? ' error' : ''}`}
