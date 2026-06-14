@@ -76,7 +76,10 @@ export default function SellModal({ holding, currentPrice, onClose }) {
           className="btn btn-secondary" style={{ width: 44, height: 44, padding: 0, fontSize: 18 }}>−</button>
         <input
           type="number" className="input" value={shares} min={1} max={maxShares}
-          onChange={e => setShares(Math.min(maxShares, Math.max(1, Number(e.target.value))))}
+          onChange={e => {
+            const v = parseInt(e.target.value, 10)
+            if (!isNaN(v)) setShares(Math.min(maxShares, Math.max(1, v)))
+          }}
           style={{ textAlign: 'center', fontWeight: 700, fontSize: 16 }}
         />
         <button onClick={() => setShares(s => Math.min(maxShares, s + 1))}
@@ -107,7 +110,7 @@ export default function SellModal({ holding, currentPrice, onClose }) {
 
       <ModalFooter>
         <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
-        <button className="btn btn-danger" onClick={handleSell} disabled={loading}>
+        <button className="btn btn-danger" onClick={handleSell} disabled={loading || shares < 1 || shares > maxShares}>
           {loading ? 'Selling...' : 'Sell Shares'}
         </button>
       </ModalFooter>

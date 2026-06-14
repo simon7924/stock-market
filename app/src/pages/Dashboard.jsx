@@ -31,6 +31,7 @@ export default function Dashboard() {
   const [buyModal, setBuyModal] = useState(null)
   const [buyShares, setBuyShares] = useState(1)
   const [buyError, setBuyError] = useState('')
+  const [showRiskWarning, setShowRiskWarning] = useState(false)
   const marketOpen = isMarketOpen()
   const searchRef = useRef()
 
@@ -77,6 +78,15 @@ export default function Dashboard() {
     return parseFloat(q.close || q.price || 0)
   }
 
+  function handleBuyClick() {
+    const risk = RISK[buyModal.symbol] || 'Medium'
+    if (risk === 'High' && !showRiskWarning) {
+      setShowRiskWarning(true)
+      return
+    }
+    handleBuy()
+  }
+
   async function handleBuy() {
     setBuyError('')
     const price = getPrice(getQuote(buyModal.symbol))
@@ -90,6 +100,7 @@ export default function Dashboard() {
       addToast('Shares Purchased', 'success', `You bought ${buyShares} shares of ${buyModal.symbol}.`)
       setBuyModal(null)
       setBuyShares(1)
+      setShowRiskWarning(false)
     } catch(e) {
       setBuyError(e.message)
     }
@@ -134,11 +145,11 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div style={{ flex: 1, overflow: 'auto', padding: 28, display: 'flex', gap: 20 }}>
+        <div className="main-content" style={{ flex: 1, overflow: 'auto', padding: 28, display: 'flex', gap: 20 }}>
           {/* Main content */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
             {/* Summary cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+            <div className="summary-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
               {/* Portfolio Value */}
               <div className="card" style={{ position: 'relative', overflow: 'hidden' }}>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Portfolio Value</div>
@@ -248,7 +259,7 @@ export default function Dashboard() {
                         {/* Price */}
                         <div style={{ textAlign: 'right', minWidth: 80 }}>
                           <div style={{ fontWeight: 700, fontSize: 15 }}>${price.toFixed(2)}</div>
-                          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                          <div className="stock-price-label" style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                             {!marketOpen ? 'Last known' : 'Live'}
                           </div>
                         </div>
@@ -263,13 +274,13 @@ export default function Dashboard() {
                         </div>
 
                         {/* Risk */}
-                        <span className={`risk-pill ${riskClass(sym)}`}>{RISK[sym] || 'Medium'}</span>
+                        <span className={`stock-risk-pill risk-pill ${riskClass(sym)}`}>{RISK[sym] || 'Medium'}</span>
 
                         {/* Buy button */}
                         <button
                           className="btn btn-primary"
                           style={{ height: 34, padding: '0 14px', fontSize: 13, flexShrink: 0 }}
-                          onClick={e => { e.stopPropagation(); setBuyModal({ symbol: sym, name: q?.name || sym }); setBuyShares(1); setBuyError('') }}
+                          onClick={e => { e.stopPropagation(); setBuyModal({ symbol: sym, name: q?.name || sym }); setBuyShares(1); setBuyError(''); setShowRiskWarning(false) }}
                         >Buy</button>
                       </div>
                     )
@@ -280,7 +291,7 @@ export default function Dashboard() {
           </div>
 
           {/* Right trending panel */}
-          <div style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 16, flexShrink: 0 }}>
+          <div className="stock-row-right-panel" style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 16, flexShrink: 0 }}>
             <div className="card-panel" style={{ padding: 16 }}>
               <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Trending</div>
               {DEFAULT_SYMBOLS.slice(0,5).map(sym => {
@@ -387,7 +398,7 @@ export default function Dashboard() {
                         navigate(`/stock/${preview.symbol}`)
                       } else {
                         setBuyModal({ symbol: preview.symbol, name: q?.name || preview.symbol })
-                        setBuyShares(1); setBuyError(''); setPreview(null)
+                        setBuyShares(1); setBuyError(''); setShowRiskWarning(false); setPreview(null)
                       }
                     }}
                   >
@@ -405,8 +416,9 @@ export default function Dashboard() {
         const q = getQuote(buyModal.symbol)
         const price = getPrice(q)
         const totalCost = buyShares * price
+        const isHighRisk = (RISK[buyModal.symbol] || 'Medium') === 'High'
         return (
-          <Modal onClose={() => setBuyModal(null)}>
+          <Modal onClose={() => { setBuyModal(null); setShowRiskWarning(false) }}>
             <ModalHeader title={`Buy ${buyModal.symbol}`} subtitle="Confirm your purchase." />
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8 }}>
@@ -415,11 +427,24 @@ export default function Dashboard() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                 <button onClick={() => setBuyShares(s => Math.max(1, s - 1))} className="btn btn-secondary" style={{ width: 44, height: 44, padding: 0, fontSize: 18 }}>−</button>
                 <input type="number" className={`input ${buyError ? 'error' : ''}`} value={buyShares} min={1}
-                  onChange={e => { setBuyShares(Math.max(1, Number(e.target.value))); setBuyError('') }}
+                  onChange={e => { const v = parseInt(e.target.value, 10); if (!isNaN(v)) setBuyShares(Math.max(1, v)); setBuyError('') }}
                   style={{ textAlign: 'center', fontWeight: 700, fontSize: 16 }} />
                 <button onClick={() => setBuyShares(s => s + 1)} className="btn btn-secondary" style={{ width: 44, height: 44, padding: 0, fontSize: 18 }}>+</button>
               </div>
               {buyError && <div style={{ fontSize: 12, color: 'var(--red)', marginBottom: 8 }}>{buyError}</div>}
+              {showRiskWarning && (
+                <div style={{
+                  background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.35)',
+                  borderRadius: 6, padding: '10px 12px', marginBottom: 10,
+                  display: 'flex', gap: 8, alignItems: 'flex-start',
+                }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 2 }}>High Risk Stock</div>
+                    <div style={{ fontSize: 11, color: '#fca5a5' }}>{buyModal.symbol} is classified as high risk due to high price volatility. You may lose a significant portion of your investment. Click confirm again to proceed.</div>
+                  </div>
+                </div>
+              )}
               <div className="card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13 }}>
                   <span style={{ color: 'var(--text-secondary)' }}>Share Price</span>
@@ -437,8 +462,8 @@ export default function Dashboard() {
               <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, textAlign: 'center' }}>Investing involves risk.</p>
             </div>
             <ModalFooter>
-              <button className="btn btn-secondary" onClick={() => setBuyModal(null)}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleBuy}>Confirm Purchase</button>
+              <button className="btn btn-secondary" onClick={() => { setBuyModal(null); setShowRiskWarning(false) }}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleBuyClick}>{showRiskWarning ? 'Confirm Anyway' : 'Confirm Purchase'}</button>
             </ModalFooter>
           </Modal>
         )

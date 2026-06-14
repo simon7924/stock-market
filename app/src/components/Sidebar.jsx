@@ -27,7 +27,7 @@ export default function Sidebar() {
   const { profile, isGuest, signOut } = useAuth()
 
   return (
-    <aside style={{
+    <aside className="sidebar" style={{
       width: 200, minHeight: '100vh', background: '#0d1117',
       borderRight: '1px solid var(--border)',
       display: 'flex', flexDirection: 'column',
@@ -45,7 +45,7 @@ export default function Sidebar() {
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
           </svg>
         </div>
-        <span style={{ fontWeight: 700, fontSize: 16, color: 'var(--text)' }}>StockSim</span>
+        <span className="sidebar-logo-text" style={{ fontWeight: 700, fontSize: 16, color: 'var(--text)' }}>StockSim</span>
       </div>
 
       {/* Nav */}
@@ -60,6 +60,7 @@ export default function Sidebar() {
                 if (locked) return alert('Create an account to compete on the leaderboard.')
                 navigate(item.path)
               }}
+              className="sidebar-nav-btn"
               style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '10px 12px', borderRadius: 6,
@@ -72,15 +73,15 @@ export default function Sidebar() {
               }}
             >
               <item.Icon />
-              {item.label}
-              {locked && <span style={{ marginLeft: 'auto', opacity: 0.6 }}><Icons.Lock /></span>}
+              <span className="sidebar-label">{item.label}</span>
+              {locked && <span className="sidebar-label" style={{ marginLeft: 'auto', opacity: 0.6 }}><Icons.Lock /></span>}
             </button>
           )
         })}
       </nav>
 
       {/* Profile */}
-      <div style={{
+      <div className="sidebar-profile" style={{
         borderTop: '1px solid var(--border)', paddingTop: 16, marginTop: 8,
       }}>
         {isGuest && (

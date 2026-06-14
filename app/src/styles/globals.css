@@ -187,6 +187,24 @@ input, select { font-family: inherit; outline: none; }
 .badge-intermediate { background: rgba(59,130,246,0.15);  color: var(--blue); }
 .badge-expert       { background: rgba(245,158,11,0.15);  color: var(--gold); }
 
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { width: 56px !important; padding: 16px 8px !important; }
+  .sidebar-label { display: none !important; }
+  .sidebar-logo-text { display: none !important; }
+  .sidebar-profile { display: none !important; }
+  .sidebar-nav-btn { justify-content: center !important; padding: 10px !important; }
+  .sidebar-logout { display: none !important; }
+  .main-content { padding: 16px !important; }
+  .summary-cards { grid-template-columns: 1fr !important; }
+  .stock-row-right-panel { display: none !important; }
+  .stock-price-label { display: none !important; }
+  .stock-risk-pill { display: none !important; }
+}
+@media (max-width: 480px) {
+  .sidebar { width: 48px !important; padding: 12px 6px !important; }
+}
+
 /* Progress bar */
 .progress-bar {
   height: 4px; background: rgba(255,255,255,0.08);
