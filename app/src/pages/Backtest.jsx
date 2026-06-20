@@ -79,6 +79,10 @@ export default function Backtest() {
         setEarliestDate(earliest)
         setStock({ symbol: r.symbol, name: r.instrument_name, earliest })
         setStep(STEPS.PICK_DATE)
+      } else if (data.code === 429 || data.message?.includes('Too many requests') || data.message?.includes('minute')) {
+        addToast('API rate limit reached — wait a moment and try again (free tier: 8 requests/min).', 'error')
+      } else if (data.code === 400 || data.message) {
+        addToast(`API error: ${data.message || 'Unknown error'}`, 'error')
       } else {
         addToast('No historical data available for this stock.', 'error')
       }
@@ -96,7 +100,16 @@ export default function Backtest() {
       // Fetch full price series from start date to now
       const res = await fetch(`${BASE_URL}/time_series?symbol=${stock.symbol}&interval=1day&start_date=${startDate}&apikey=${API_KEY}&outputsize=5000`)
       const data = await res.json()
-      if (!data.values || !data.values.length) { addToast('No data for this date range.', 'error'); setJumping(false); return }
+      if (!data.values || !data.values.length) {
+        if (data.code === 429 || data.message?.includes('Too many requests') || data.message?.includes('minute')) {
+          addToast('API rate limit reached — wait a moment and try again.', 'error')
+        } else if (data.message) {
+          addToast(`API error: ${data.message}`, 'error')
+        } else {
+          addToast('No data for this date range.', 'error')
+        }
+        setJumping(false); return
+      }
       const prices = data.values.map(v => ({ date: v.datetime.split(' ')[0], price: parseFloat(v.close) })).reverse()
       setAllPrices(prices)
       const first = prices[0]
