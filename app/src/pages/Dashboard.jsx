@@ -9,8 +9,6 @@ import Modal, { ModalHeader, ModalFooter } from '../components/Modal'
 import { supabase } from '../lib/supabase'
 
 const DEFAULT_SYMBOLS = ['AAPL','TSLA','NVDA','MSFT','GOOGL','AMZN','META','NFLX']
-const BATCH_1 = DEFAULT_SYMBOLS.slice(0, 4)
-const BATCH_2 = DEFAULT_SYMBOLS.slice(4)
 
 const RISK = { AAPL:'Low', MSFT:'Low', GOOGL:'Low', AMZN:'Medium', META:'Medium', NVDA:'High', TSLA:'High', NFLX:'High', AMD:'High', INTC:'Medium', SPY:'Low', QQQ:'Low' }
 
@@ -39,32 +37,19 @@ export default function Dashboard() {
 
   useEffect(() => { fetchQuotes() }, [])
 
-  function mergeQuotes(data) {
-    if (Array.isArray(data)) {
-      const map = {}
-      data.forEach(q => { map[q.symbol] = q })
-      return map
-    } else if (data && typeof data === 'object' && !data.code) {
-      return data
-    }
-    return {}
-  }
-
   async function fetchQuotes() {
     setLoading(true)
     try {
-      // Fetch first 4 stocks (4 credits), show them immediately
-      const data1 = await getBatchQuotes(BATCH_1)
-      setQuotes(prev => ({ ...prev, ...mergeQuotes(data1) }))
-      setLoading(false)
-      // Fetch remaining 4 stocks after a delay to avoid rate limit
-      setTimeout(async () => {
-        try {
-          const data2 = await getBatchQuotes(BATCH_2)
-          setQuotes(prev => ({ ...prev, ...mergeQuotes(data2) }))
-        } catch {}
-      }, 61000)
-    } catch(e) { console.error(e); setLoading(false) }
+      const data = await getBatchQuotes(DEFAULT_SYMBOLS)
+      if (Array.isArray(data)) {
+        const map = {}
+        data.forEach(q => { map[q.symbol] = q })
+        setQuotes(map)
+      } else if (data && typeof data === 'object') {
+        setQuotes(data)
+      }
+    } catch(e) { console.error(e) }
+    setLoading(false)
   }
 
   useEffect(() => {
