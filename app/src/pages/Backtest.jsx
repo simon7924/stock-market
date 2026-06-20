@@ -10,23 +10,36 @@ const STEPS = { PICK_STOCK: 0, PICK_DATE: 1, TRADE: 2 }
 
 function fmt(n) { return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
 
-// localStorage cache for backtest data (longer TTL since historical data doesn't change)
-const BT_CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
+// Hardcoded earliest dates for popular stocks — avoids any API call
+const KNOWN_EARLIEST = {
+  AAPL: '1980-12-12', MSFT: '1986-03-13', GOOGL: '2004-08-19', GOOG: '2004-08-19',
+  AMZN: '1997-05-15', META: '2012-05-18', TSLA: '2010-06-29', NFLX: '2002-05-23',
+  NVDA: '1999-01-22', AMD: '1983-03-21', INTC: '1980-03-17', SPY: '1993-01-29',
+  QQQ: '1999-03-10', DIS: '1962-01-02', BA: '1962-01-02', JPM: '1983-04-01',
+  V: '2008-03-19', MA: '2006-05-25', WMT: '1972-08-25', KO: '1962-01-02',
+  PEP: '1972-06-01', NKE: '1980-12-02', PYPL: '2015-07-06', UBER: '2019-05-10',
+  SNAP: '2017-03-02', COIN: '2021-04-14', GME: '2002-02-13', AMC: '2013-12-18',
+  PLTR: '2020-09-30', RBLX: '2021-03-10', SQ: '2015-11-19', SHOP: '2015-05-21',
+}
+
+// localStorage cache for backtest data (never expires for earliest dates,
+// 7 days for time series since historical data doesn't change)
+const BT_TS_CACHE_TTL = 7 * 24 * 60 * 60 * 1000
 
 function btFromCache(key) {
   try {
     const raw = localStorage.getItem(`bt_${key}`)
     if (!raw) return null
     const entry = JSON.parse(raw)
-    if (Date.now() < entry.expiresAt) return entry.data
+    if (entry.expiresAt === 0 || Date.now() < entry.expiresAt) return entry.data
     localStorage.removeItem(`bt_${key}`)
   } catch {}
   return null
 }
 
-function btToCache(key, data) {
+function btToCache(key, data, ttl) {
   try {
-    localStorage.setItem(`bt_${key}`, JSON.stringify({ data, expiresAt: Date.now() + BT_CACHE_TTL }))
+    localStorage.setItem(`bt_${key}`, JSON.stringify({ data, expiresAt: ttl === 0 ? 0 : Date.now() + (ttl || BT_TS_CACHE_TTL) }))
   } catch {}
 }
 
@@ -111,11 +124,13 @@ export default function Backtest() {
     setLoadingDates(true)
     setRetryMsg('')
     try {
-      const cacheKey = `earliest:${r.symbol}`
-      let earliest = btFromCache(cacheKey)
+      // 1. Check hardcoded list (zero API cost)
+      let earliest = KNOWN_EARLIEST[r.symbol]
+      // 2. Check localStorage cache (zero API cost)
+      if (!earliest) earliest = btFromCache(`earliest:${r.symbol}`)
+      // 3. Only hit API if we truly don't know this stock
       if (!earliest) {
         let data = await fetchEarliest(r.symbol)
-        // Auto-retry once after waiting if rate limited
         if (data.code === 429 || data.message?.includes('Too many requests') || data.message?.includes('minute')) {
           setRetryMsg('Waiting for API rate limit to reset...')
           await new Promise(resolve => setTimeout(resolve, 61000))
@@ -126,8 +141,9 @@ export default function Backtest() {
         if (err) { addToast(err, 'error'); setLoadingDates(false); return }
         if (!data.datetime) { addToast('No historical data available for this stock.', 'error'); setLoadingDates(false); return }
         earliest = data.datetime.split(' ')[0]
-        btToCache(cacheKey, earliest)
       }
+      // Cache permanently for future visits
+      btToCache(`earliest:${r.symbol}`, earliest, 0)
       setEarliestDate(earliest)
       setStock({ symbol: r.symbol, name: r.instrument_name, earliest })
       setStep(STEPS.PICK_DATE)
