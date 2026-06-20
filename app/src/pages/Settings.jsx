@@ -1,11 +1,57 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import { useAuth } from '../context/AuthContext'
 import { usePortfolio } from '../context/PortfolioContext'
 import Modal, { ModalHeader, ModalFooter, WarningBox } from '../components/Modal'
 
-const CATEGORIES = ['Account','Portfolio','Appearance','Notifications','Privacy','Danger Zone']
+const CATEGORIES = ['Account', 'Portfolio', 'Appearance', 'Notifications', 'Privacy']
+
+const ACCENT_COLORS = ['#3b82f6', '#22c55e', '#8b5cf6', '#f97316']
+
+// Persist appearance settings in localStorage
+function loadAppearance() {
+  try {
+    return JSON.parse(localStorage.getItem('stocksim_appearance') || '{}')
+  } catch { return {} }
+}
+
+function saveAppearance(val) {
+  localStorage.setItem('stocksim_appearance', JSON.stringify(val))
+}
+
+// Apply accent color to CSS variable
+function applyAccent(color) {
+  document.documentElement.style.setProperty('--blue', color)
+  // Recompute glow color from hex
+  const r = parseInt(color.slice(1, 3), 16)
+  const g = parseInt(color.slice(3, 5), 16)
+  const b = parseInt(color.slice(5, 7), 16)
+  document.documentElement.style.setProperty('--blue-glow', `rgba(${r},${g},${b},0.25)`)
+}
+
+// Apply dark/light mode
+function applyDarkMode(dark) {
+  if (dark) {
+    document.documentElement.style.setProperty('--bg', '#0f1115')
+    document.documentElement.style.setProperty('--panel', '#151922')
+    document.documentElement.style.setProperty('--card', '#1b2230')
+    document.documentElement.style.setProperty('--border', 'rgba(255,255,255,0.06)')
+    document.documentElement.style.setProperty('--border-hover', 'rgba(255,255,255,0.12)')
+    document.documentElement.style.setProperty('--text', '#ffffff')
+    document.documentElement.style.setProperty('--text-secondary', '#b0bac8')
+    document.documentElement.style.setProperty('--text-muted', '#868f9e')
+  } else {
+    document.documentElement.style.setProperty('--bg', '#f0f2f5')
+    document.documentElement.style.setProperty('--panel', '#ffffff')
+    document.documentElement.style.setProperty('--card', '#f8fafc')
+    document.documentElement.style.setProperty('--border', 'rgba(0,0,0,0.08)')
+    document.documentElement.style.setProperty('--border-hover', 'rgba(0,0,0,0.16)')
+    document.documentElement.style.setProperty('--text', '#0f172a')
+    document.documentElement.style.setProperty('--text-secondary', '#475569')
+    document.documentElement.style.setProperty('--text-muted', '#94a3b8')
+  }
+}
 
 export default function Settings() {
   const navigate = useNavigate()
@@ -15,13 +61,53 @@ export default function Settings() {
   const [showReset, setShowReset] = useState(false)
   const [resetInput, setResetInput] = useState('')
   const [resetLoading, setResetLoading] = useState(false)
-  const [darkMode] = useState(true)
-  const [accentColor, setAccentColor] = useState('#3b82f6')
-  const [notifications, setNotifications] = useState({ price: true, market: true, email: false })
+  const [notifications, setNotifications] = useState({ price: true, market: true, weekly: false })
+
+  const saved = loadAppearance()
+  const [darkMode, setDarkMode] = useState(saved.darkMode !== false)
+  const [accentColor, setAccentColor] = useState(saved.accentColor || '#3b82f6')
+  const [graphAnimations, setGraphAnimations] = useState(saved.graphAnimations !== false)
+
+  // Apply saved appearance on mount
+  useEffect(() => {
+    applyDarkMode(darkMode)
+    applyAccent(accentColor)
+    // Store graphAnimations globally so charts can read it
+    window.__stocksimGraphAnimations = graphAnimations
+  }, [])
+
+  function toggleDarkMode() {
+    const next = !darkMode
+    setDarkMode(next)
+    applyDarkMode(next)
+    const s = loadAppearance()
+    saveAppearance({ ...s, darkMode: next })
+  }
+
+  function changeAccent(color) {
+    setAccentColor(color)
+    applyAccent(color)
+    const s = loadAppearance()
+    saveAppearance({ ...s, accentColor: color })
+  }
+
+  function toggleGraphAnimations() {
+    const next = !graphAnimations
+    setGraphAnimations(next)
+    window.__stocksimGraphAnimations = next
+    const s = loadAppearance()
+    saveAppearance({ ...s, graphAnimations: next })
+  }
 
   async function handleReset() {
     if (resetInput !== 'RESET') return
     setResetLoading(true)
+    // Clear all localStorage cache entries too
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith('quote_') || k.startsWith('ts_') || k.startsWith('search_')) {
+        localStorage.removeItem(k)
+      }
+    })
     await resetPortfolio()
     setResetLoading(false)
     setShowReset(false)
@@ -49,9 +135,9 @@ export default function Settings() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: '10px 14px', borderRadius: 6, textAlign: 'left',
-                    background: active === cat ? (cat === 'Danger Zone' ? 'rgba(239,68,68,0.1)' : 'rgba(59,130,246,0.15)') : 'transparent',
-                    color: active === cat ? (cat === 'Danger Zone' ? 'var(--red)' : 'var(--blue)') : 'var(--text-secondary)',
-                    border: active === cat ? `1px solid ${cat === 'Danger Zone' ? 'rgba(239,68,68,0.3)' : 'rgba(59,130,246,0.3)'}` : '1px solid transparent',
+                    background: active === cat ? 'rgba(59,130,246,0.15)' : 'transparent',
+                    color: active === cat ? 'var(--blue)' : 'var(--text-secondary)',
+                    border: active === cat ? '1px solid rgba(59,130,246,0.3)' : '1px solid transparent',
                     fontWeight: active === cat ? 600 : 400, fontSize: 13, cursor: 'pointer',
                   }}>
                   {cat === 'Account' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
@@ -59,7 +145,6 @@ export default function Settings() {
                   {cat === 'Appearance' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 8a4 4 0 0 1 0 8"/></svg>}
                   {cat === 'Notifications' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>}
                   {cat === 'Privacy' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>}
-                  {cat === 'Danger Zone' && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>}
                   {' '}{cat}
                 </button>
               ))}
@@ -69,6 +154,7 @@ export default function Settings() {
           {/* Panel */}
           <div style={{ flex: 1 }}>
             <div className="card-panel">
+
               {active === 'Account' && (
                 <div>
                   <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Account</h2>
@@ -124,32 +210,71 @@ export default function Settings() {
               {active === 'Appearance' && (
                 <div>
                   <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Appearance</h2>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+                    {/* Dark mode */}
                     <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div><div style={{ fontWeight: 600 }}>Dark Mode</div><div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Default and recommended</div></div>
-                      <div style={{ width: 48, height: 26, borderRadius: 13, background: 'var(--blue)', position: 'relative', cursor: 'pointer' }}>
-                        <div style={{ position: 'absolute', right: 3, top: 3, width: 20, height: 20, borderRadius: '50%', background: 'white' }} />
+                      <div>
+                        <div style={{ fontWeight: 600 }}>Dark Mode</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{darkMode ? 'Currently dark' : 'Currently light'}</div>
+                      </div>
+                      <div onClick={toggleDarkMode}
+                        style={{
+                          width: 48, height: 26, borderRadius: 13, cursor: 'pointer',
+                          background: darkMode ? 'var(--blue)' : 'rgba(255,255,255,0.15)',
+                          position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+                        }}>
+                        <div style={{
+                          position: 'absolute', top: 3,
+                          left: darkMode ? 'auto' : 3,
+                          right: darkMode ? 3 : 'auto',
+                          width: 20, height: 20, borderRadius: '50%', background: 'white',
+                          transition: 'all 0.2s',
+                        }} />
                       </div>
                     </div>
+
+                    {/* Accent color */}
                     <div className="card">
-                      <div style={{ fontWeight: 600, marginBottom: 10 }}>Accent Color</div>
-                      <div style={{ display: 'flex', gap: 10 }}>
-                        {['#3b82f6','#22c55e','#8b5cf6','#f97316'].map(c => (
-                          <button key={c} onClick={() => setAccentColor(c)}
+                      <div style={{ fontWeight: 600, marginBottom: 12 }}>Accent Color</div>
+                      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                        {ACCENT_COLORS.map(c => (
+                          <button key={c} onClick={() => changeAccent(c)}
                             style={{
-                              width: 32, height: 32, borderRadius: '50%', background: c,
+                              width: 34, height: 34, borderRadius: '50%', background: c,
                               border: accentColor === c ? '3px solid white' : '3px solid transparent',
-                              cursor: 'pointer', transition: 'border 0.15s',
+                              boxShadow: accentColor === c ? `0 0 0 2px ${c}` : 'none',
+                              cursor: 'pointer', transition: 'all 0.15s',
                             }} />
                         ))}
                       </div>
-                    </div>
-                    <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div><div style={{ fontWeight: 600 }}>Graph Animations</div></div>
-                      <div style={{ width: 48, height: 26, borderRadius: 13, background: 'var(--blue)', position: 'relative', cursor: 'pointer' }}>
-                        <div style={{ position: 'absolute', right: 3, top: 3, width: 20, height: 20, borderRadius: '50%', background: 'white' }} />
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 10 }}>
+                        Changes buttons, highlights, and active states across the app.
                       </div>
                     </div>
+
+                    {/* Graph animations */}
+                    <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: 600 }}>Graph Animations</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{graphAnimations ? 'Charts animate on load' : 'Charts load instantly'}</div>
+                      </div>
+                      <div onClick={toggleGraphAnimations}
+                        style={{
+                          width: 48, height: 26, borderRadius: 13, cursor: 'pointer',
+                          background: graphAnimations ? 'var(--blue)' : 'rgba(255,255,255,0.15)',
+                          position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+                        }}>
+                        <div style={{
+                          position: 'absolute', top: 3,
+                          left: graphAnimations ? 'auto' : 3,
+                          right: graphAnimations ? 3 : 'auto',
+                          width: 20, height: 20, borderRadius: '50%', background: 'white',
+                          transition: 'all 0.2s',
+                        }} />
+                      </div>
+                    </div>
+
                   </div>
                 </div>
               )}
@@ -161,7 +286,7 @@ export default function Settings() {
                     {[
                       { key: 'price', label: 'Price Alerts', desc: 'Get notified when stocks hit target prices' },
                       { key: 'market', label: 'Market Updates', desc: 'Daily market open/close reminders' },
-                      { key: 'email', label: 'Weekly Summary Emails', desc: 'Portfolio performance summary each week' },
+                      { key: 'weekly', label: 'Weekly Summaries', desc: 'Portfolio performance summary each week' },
                     ].map(n => (
                       <div key={n.key} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
@@ -191,7 +316,7 @@ export default function Settings() {
               {active === 'Privacy' && (
                 <div>
                   <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Privacy</h2>
-                  <div className="card" style={{ marginBottom: 16 }}>
+                  <div className="card" style={{ marginBottom: 20 }}>
                     <div style={{ fontWeight: 600, marginBottom: 6 }}>Data Storage</div>
                     <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                       {isGuest
@@ -199,24 +324,14 @@ export default function Settings() {
                         : 'Your portfolio data is securely stored in your account database and synced on every action.'}
                     </div>
                   </div>
-                  <button className="btn btn-secondary" style={{ height: 38, fontSize: 13 }}>Clear Cached Data</button>
-                </div>
-              )}
 
-              {active === 'Danger Zone' && (
-                <div>
-                  <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, color: 'var(--red)', display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    Danger Zone
-                  </h2>
-                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 24 }}>These actions permanently affect your account.</p>
                   <div style={{
                     background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)',
                     borderRadius: 6, padding: 20,
                   }}>
                     <div style={{ fontWeight: 700, marginBottom: 6 }}>Reset Portfolio</div>
                     <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>
-                      This will permanently erase your balance, stocks, transaction history, and leaderboard progress.
+                      Permanently erases your balance, stocks, transaction history, leaderboard progress, and all cached data.
                     </div>
                     <button className="btn" onClick={() => setShowReset(true)}
                       style={{ border: '1px solid var(--red)', color: 'var(--red)', background: 'transparent', height: 40, padding: '0 20px', fontSize: 13 }}>
@@ -226,6 +341,7 @@ export default function Settings() {
                   </div>
                 </div>
               )}
+
             </div>
           </div>
         </div>
@@ -237,7 +353,7 @@ export default function Settings() {
           <ModalHeader title="Reset Portfolio?" subtitle="This action permanently deletes your portfolio and cannot be undone." />
           <WarningBox
             title="You are about to permanently erase:"
-            text="Your balance · Your stocks · Transaction history · Leaderboard progress"
+            text="Your balance · Your stocks · Transaction history · Leaderboard progress · Cached data"
           />
           <div style={{ marginBottom: 20 }}>
             <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>

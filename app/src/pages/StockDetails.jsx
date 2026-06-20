@@ -138,6 +138,7 @@ export default function StockDetails() {
                     />
                     <Line type="monotone" dataKey="price" stroke={isPositive ? '#22c55e' : '#ef4444'}
                       strokeWidth={2} dot={false}
+                      isAnimationActive={window.__stocksimGraphAnimations !== false}
                       style={{ filter: `drop-shadow(0 0 6px ${isPositive ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'})` }}
                     />
                   </LineChart>
