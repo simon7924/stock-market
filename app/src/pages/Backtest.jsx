@@ -10,6 +10,34 @@ const STEPS = { PICK_STOCK: 0, PICK_DATE: 1, TRADE: 2 }
 
 function fmt(n) { return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
 
+// localStorage cache for backtest data (longer TTL since historical data doesn't change)
+const BT_CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
+
+function btFromCache(key) {
+  try {
+    const raw = localStorage.getItem(`bt_${key}`)
+    if (!raw) return null
+    const entry = JSON.parse(raw)
+    if (Date.now() < entry.expiresAt) return entry.data
+    localStorage.removeItem(`bt_${key}`)
+  } catch {}
+  return null
+}
+
+function btToCache(key, data) {
+  try {
+    localStorage.setItem(`bt_${key}`, JSON.stringify({ data, expiresAt: Date.now() + BT_CACHE_TTL }))
+  } catch {}
+}
+
+function isApiError(data) {
+  if (data.code === 429 || data.message?.includes('Too many requests') || data.message?.includes('minute'))
+    return 'API rate limit reached — wait about 60 seconds and try again (free tier: 8 requests/min).'
+  if (data.code || data.status === 'error')
+    return `API error: ${data.message || 'Unknown error'}`
+  return null
+}
+
 export default function Backtest() {
   const { addToast } = useToast()
 
@@ -46,8 +74,12 @@ export default function Backtest() {
     searchTimer.current = setTimeout(async () => {
       setSearching(true)
       try {
-        const res = await fetch(`${BASE_URL}/symbol_search?symbol=${encodeURIComponent(val)}&apikey=${API_KEY}`)
-        const data = await res.json()
+        let data = btFromCache(`search:${val}`)
+        if (!data) {
+          const res = await fetch(`${BASE_URL}/symbol_search?symbol=${encodeURIComponent(val)}&apikey=${API_KEY}`)
+          data = await res.json()
+          btToCache(`search:${val}`, data)
+        }
         const US_EXCHANGES = ['NASDAQ', 'NYSE', 'NYSE ARCA', 'NYSE MKT', 'BATS']
         const filtered = (data.data || [])
           .filter(r => (r.instrument_type === 'Common Stock' || r.instrument_type === 'ETF') && r.currency === 'USD')
@@ -70,22 +102,22 @@ export default function Backtest() {
     setSearchQuery(r.symbol + ' — ' + r.instrument_name)
     setSearchResults([])
     setLoadingDates(true)
-    // Fetch earliest available date via a large time series request
     try {
-      const res = await fetch(`${BASE_URL}/time_series?symbol=${r.symbol}&interval=1day&outputsize=5000&apikey=${API_KEY}`)
-      const data = await res.json()
-      if (data.values && data.values.length) {
-        const earliest = data.values[data.values.length - 1].datetime.split(' ')[0]
-        setEarliestDate(earliest)
-        setStock({ symbol: r.symbol, name: r.instrument_name, earliest })
-        setStep(STEPS.PICK_DATE)
-      } else if (data.code === 429 || data.message?.includes('Too many requests') || data.message?.includes('minute')) {
-        addToast('API rate limit reached — wait a moment and try again (free tier: 8 requests/min).', 'error')
-      } else if (data.code === 400 || data.message) {
-        addToast(`API error: ${data.message || 'Unknown error'}`, 'error')
-      } else {
-        addToast('No historical data available for this stock.', 'error')
+      // Use earliest_timestamp endpoint (1 credit) instead of fetching 5000 records
+      const cacheKey = `earliest:${r.symbol}`
+      let earliest = btFromCache(cacheKey)
+      if (!earliest) {
+        const res = await fetch(`${BASE_URL}/earliest_timestamp?symbol=${r.symbol}&interval=1day&apikey=${API_KEY}`)
+        const data = await res.json()
+        const err = isApiError(data)
+        if (err) { addToast(err, 'error'); setLoadingDates(false); return }
+        if (!data.datetime) { addToast('No historical data available for this stock.', 'error'); setLoadingDates(false); return }
+        earliest = data.datetime.split(' ')[0]
+        btToCache(cacheKey, earliest)
       }
+      setEarliestDate(earliest)
+      setStock({ symbol: r.symbol, name: r.instrument_name, earliest })
+      setStep(STEPS.PICK_DATE)
     } catch {
       addToast('Failed to fetch stock data.', 'error')
     }
@@ -97,20 +129,19 @@ export default function Backtest() {
     if (!startDate) return
     setJumping(true)
     try {
-      // Fetch full price series from start date to now
-      const res = await fetch(`${BASE_URL}/time_series?symbol=${stock.symbol}&interval=1day&start_date=${startDate}&apikey=${API_KEY}&outputsize=5000`)
-      const data = await res.json()
-      if (!data.values || !data.values.length) {
-        if (data.code === 429 || data.message?.includes('Too many requests') || data.message?.includes('minute')) {
-          addToast('API rate limit reached — wait a moment and try again.', 'error')
-        } else if (data.message) {
-          addToast(`API error: ${data.message}`, 'error')
-        } else {
-          addToast('No data for this date range.', 'error')
+      const cacheKey = `ts:${stock.symbol}:${startDate}`
+      let prices = btFromCache(cacheKey)
+      if (!prices) {
+        const res = await fetch(`${BASE_URL}/time_series?symbol=${stock.symbol}&interval=1day&start_date=${startDate}&apikey=${API_KEY}&outputsize=5000`)
+        const data = await res.json()
+        if (!data.values || !data.values.length) {
+          const err = isApiError(data)
+          addToast(err || 'No data for this date range.', 'error')
+          setJumping(false); return
         }
-        setJumping(false); return
+        prices = data.values.map(v => ({ date: v.datetime.split(' ')[0], price: parseFloat(v.close) })).reverse()
+        btToCache(cacheKey, prices)
       }
-      const prices = data.values.map(v => ({ date: v.datetime.split(' ')[0], price: parseFloat(v.close) })).reverse()
       setAllPrices(prices)
       const first = prices[0]
       setBuyHoldStart(first.price)
