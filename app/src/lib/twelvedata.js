@@ -1,7 +1,7 @@
 const API_KEY = import.meta.env.VITE_TWELVE_DATA_API_KEY
 const BASE_URL = 'https://api.twelvedata.com'
 
-const CACHE_TTL = 90_000 // 90 seconds — survives page reloads within the rate-limit window
+const CACHE_TTL = 5 * 60_000 // 5 minutes — reduces API credit usage on free tier (8 credits/min)
 
 function fromCache(key) {
   try {

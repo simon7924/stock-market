@@ -98,17 +98,30 @@ export default function Backtest() {
     }, 400)
   }
 
+  const [retryMsg, setRetryMsg] = useState('')
+
+  async function fetchEarliest(symbol) {
+    const res = await fetch(`${BASE_URL}/earliest_timestamp?symbol=${symbol}&interval=1day&apikey=${API_KEY}`)
+    return res.json()
+  }
+
   async function selectStock(r) {
     setSearchQuery(r.symbol + ' — ' + r.instrument_name)
     setSearchResults([])
     setLoadingDates(true)
+    setRetryMsg('')
     try {
-      // Use earliest_timestamp endpoint (1 credit) instead of fetching 5000 records
       const cacheKey = `earliest:${r.symbol}`
       let earliest = btFromCache(cacheKey)
       if (!earliest) {
-        const res = await fetch(`${BASE_URL}/earliest_timestamp?symbol=${r.symbol}&interval=1day&apikey=${API_KEY}`)
-        const data = await res.json()
+        let data = await fetchEarliest(r.symbol)
+        // Auto-retry once after waiting if rate limited
+        if (data.code === 429 || data.message?.includes('Too many requests') || data.message?.includes('minute')) {
+          setRetryMsg('Waiting for API rate limit to reset...')
+          await new Promise(resolve => setTimeout(resolve, 61000))
+          setRetryMsg('')
+          data = await fetchEarliest(r.symbol)
+        }
         const err = isApiError(data)
         if (err) { addToast(err, 'error'); setLoadingDates(false); return }
         if (!data.datetime) { addToast('No historical data available for this stock.', 'error'); setLoadingDates(false); return }
@@ -122,6 +135,7 @@ export default function Backtest() {
       addToast('Failed to fetch stock data.', 'error')
     }
     setLoadingDates(false)
+    setRetryMsg('')
   }
 
   // ─── Start session ─────────────────────────────────────────────────────────
@@ -132,8 +146,17 @@ export default function Backtest() {
       const cacheKey = `ts:${stock.symbol}:${startDate}`
       let prices = btFromCache(cacheKey)
       if (!prices) {
-        const res = await fetch(`${BASE_URL}/time_series?symbol=${stock.symbol}&interval=1day&start_date=${startDate}&apikey=${API_KEY}&outputsize=5000`)
-        const data = await res.json()
+        async function fetchTS() {
+          const res = await fetch(`${BASE_URL}/time_series?symbol=${stock.symbol}&interval=1day&start_date=${startDate}&apikey=${API_KEY}&outputsize=5000`)
+          return res.json()
+        }
+        let data = await fetchTS()
+        if (!data.values && (data.code === 429 || data.message?.includes('Too many requests') || data.message?.includes('minute'))) {
+          setRetryMsg('Waiting for API rate limit to reset...')
+          await new Promise(resolve => setTimeout(resolve, 61000))
+          setRetryMsg('')
+          data = await fetchTS()
+        }
         if (!data.values || !data.values.length) {
           const err = isApiError(data)
           addToast(err || 'No data for this date range.', 'error')
@@ -290,8 +313,8 @@ export default function Backtest() {
                   autoFocus
                 />
                 {(searching || loadingDates) && (
-                  <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 11, color: 'var(--text-muted)' }}>
-                    {loadingDates ? 'Loading data...' : 'Searching...'}
+                  <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 11, color: retryMsg ? 'var(--gold)' : 'var(--text-muted)' }}>
+                    {retryMsg || (loadingDates ? 'Loading data...' : 'Searching...')}
                   </div>
                 )}
                 {searchResults.length > 0 && (
@@ -379,7 +402,7 @@ export default function Backtest() {
               <div style={{ display: 'flex', gap: 10 }}>
                 <button className="btn btn-secondary" style={{ flex: 1 }} onClick={resetSession}>Back</button>
                 <button className="btn btn-primary" style={{ flex: 2 }} disabled={!startDate || !!dateError || jumping} onClick={startSession}>
-                  {jumping ? 'Loading...' : 'Start Backtest'}
+                  {retryMsg ? 'Waiting for API...' : jumping ? 'Loading...' : 'Start Backtest'}
                 </button>
               </div>
             </div>
