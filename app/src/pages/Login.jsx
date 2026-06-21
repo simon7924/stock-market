@@ -80,7 +80,7 @@ export default function Login() {
         <div style={{ display: 'flex', gap: 16, flex: 2 }}>
           {/* Guest panel */}
           <div style={{
-            flex: 0.85, background: '#111723',
+            flex: 0.85, background: 'var(--card)',
             border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)',
             padding: 24, display: 'flex', flexDirection: 'column', gap: 12,
           }}>

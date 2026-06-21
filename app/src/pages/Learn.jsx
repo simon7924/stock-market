@@ -96,7 +96,7 @@ export default function Learn() {
       <div style={{ flex: 1, overflow: 'auto' }}>
         {/* Hero banner */}
         <div style={{
-          background: 'linear-gradient(135deg, #1e3a5f 0%, #0f1f3d 100%)',
+          background: 'linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%)',
           padding: '40px 40px', position: 'relative', overflow: 'hidden',
         }}>
           <div style={{ position: 'absolute', inset: 0, opacity: 0.05 }}>
@@ -173,7 +173,7 @@ export default function Learn() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg width="180" height="160" viewBox="0 0 180 160">
                   {/* Pie chart */}
-                  <circle cx="90" cy="80" r="60" fill="#1b2230"/>
+                  <circle cx="90" cy="80" r="60" fill="var(--card)"/>
                   {[
                     { color: '#3b82f6', start: 0, end: 90 },
                     { color: '#22c55e', start: 90, end: 180 },

@@ -20,7 +20,7 @@ export default function Modal({ children, onClose, size = '', danger = false, un
               border: 'none', cursor: 'pointer',
               transition: 'background 0.15s',
             }}
-            onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+            onMouseOver={e => e.currentTarget.style.background = 'var(--hover-bg)'}
             onMouseOut={e => e.currentTarget.style.background = 'transparent'}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>

@@ -13,7 +13,7 @@ import Backtest from './pages/Backtest'
 
 function ProtectedRoute({ children }) {
   const { user, isGuest, loading } = useAuth()
-  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0f1115', color: 'white', fontFamily: "'DM Sans', Arial, sans-serif" }}>Loading...</div>
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg)', color: 'var(--text)', fontFamily: "'DM Sans', Arial, sans-serif" }}>Loading...</div>
   if (!user && !isGuest) return <Navigate to="/" replace />
   return children
 }

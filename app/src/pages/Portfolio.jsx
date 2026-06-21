@@ -83,7 +83,7 @@ export default function Portfolio() {
 
         {/* Summary banner */}
         <div style={{
-          background: 'linear-gradient(135deg, #1a2e4a 0%, #111827 100%)',
+          background: 'linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%)',
           borderRadius: 10, padding: '24px 32px', marginBottom: 24,
           border: '1px solid rgba(59,130,246,0.2)',
         }}>
@@ -123,20 +123,20 @@ export default function Portfolio() {
             ].map((s, i) => (
               <div key={s.label} style={{
                 paddingLeft: i === 0 ? 0 : 24,
-                borderLeft: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.07)',
+                borderLeft: i === 0 ? 'none' : '1px solid var(--border)',
               }}>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 }}>{s.label}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 }}>{s.label}</div>
                 <div style={{ fontSize: s.big ? 28 : 20, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{s.sub}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{s.sub}</div>
               </div>
             ))}
           </div>
 
           {/* Best / worst row */}
           {bestHolding && (
-            <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 32, fontSize: 12 }}>
+            <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid var(--border)', display: 'flex', gap: 32, fontSize: 12 }}>
               <div>
-                <span style={{ color: 'rgba(255,255,255,0.45)', marginRight: 8 }}>Best position:</span>
+                <span style={{ color: 'var(--text-muted)', marginRight: 8 }}>Best position:</span>
                 <span style={{ fontWeight: 700 }}>{bestHolding.symbol}</span>
                 <span style={{ color: 'var(--green)', marginLeft: 8, fontWeight: 600 }}>
                   {((getPrice(bestHolding.symbol) - bestHolding.avg_price) / bestHolding.avg_price * 100).toFixed(2)}%
@@ -144,7 +144,7 @@ export default function Portfolio() {
               </div>
               {worstHolding && worstHolding.symbol !== bestHolding.symbol && (
                 <div>
-                  <span style={{ color: 'rgba(255,255,255,0.45)', marginRight: 8 }}>Worst position:</span>
+                  <span style={{ color: 'var(--text-muted)', marginRight: 8 }}>Worst position:</span>
                   <span style={{ fontWeight: 700 }}>{worstHolding.symbol}</span>
                   <span style={{ color: 'var(--red)', marginLeft: 8, fontWeight: 600 }}>
                     {((getPrice(worstHolding.symbol) - worstHolding.avg_price) / worstHolding.avg_price * 100).toFixed(2)}%

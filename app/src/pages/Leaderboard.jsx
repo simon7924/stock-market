@@ -83,7 +83,7 @@ export default function Leaderboard() {
             {top3.length >= 3 && (
               <div className="card-panel" style={{
                 marginBottom: 24, textAlign: 'center',
-                background: 'linear-gradient(180deg, #151922 0%, #0f1115 100%)',
+                background: 'linear-gradient(180deg, var(--panel) 0%, var(--bg) 100%)',
                 position: 'relative', overflow: 'hidden',
               }}>
                 {/* Particle dots */}

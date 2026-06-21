@@ -54,7 +54,7 @@ export default function CreatePortfolio() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#0f1115',
+      minHeight: '100vh', background: 'var(--bg)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       position: 'relative', overflow: 'hidden', padding: 20,
     }}>
@@ -67,8 +67,8 @@ export default function CreatePortfolio() {
 
       <div style={{
         width: '100%', maxWidth: 520,
-        background: '#151922', borderRadius: 8, padding: 28,
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--panel)', borderRadius: 8, padding: 28,
+        border: '1px solid var(--border)',
         boxShadow: '0 20px 60px rgba(0,0,0,0.6)', zIndex: 1,
       }}>
         {/* Header */}
@@ -97,8 +97,8 @@ export default function CreatePortfolio() {
                 onClick={() => { setSelected(opt.amount); setCustom(''); setCustomError('') }}
                 style={{
                   height: 70, borderRadius: 6, padding: 12, cursor: 'pointer',
-                  background: isActive ? '#202a3a' : '#1b2230',
-                  border: isActive ? '2px solid #3b82f6' : '1px solid rgba(255,255,255,0.06)',
+                  background: isActive ? 'var(--panel)' : 'var(--card)',
+                  border: isActive ? '2px solid var(--blue)' : '1px solid var(--border)',
                   textAlign: 'left', position: 'relative',
                   transform: isActive ? 'scale(1.02)' : 'scale(1)',
                   transition: 'all 0.15s',
@@ -122,7 +122,7 @@ export default function CreatePortfolio() {
         </div>
 
         {/* Divider */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', margin: '18px 0' }} />
+        <div style={{ borderTop: '1px solid var(--border)', margin: '18px 0' }} />
 
         {/* Custom */}
         <div style={{ fontSize: 13, color: '#cbd5e1', marginBottom: 8, fontWeight: 500 }}>Custom Amount</div>

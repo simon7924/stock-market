@@ -30,7 +30,7 @@ export default function Sidebar() {
 
   return (
     <aside className="sidebar" style={{
-      width: 200, minHeight: '100vh', background: '#0d1117',
+      width: 200, minHeight: '100vh', background: 'var(--sidebar-bg)',
       borderRight: '1px solid var(--border)',
       display: 'flex', flexDirection: 'column',
       padding: '20px 12px', flexShrink: 0,

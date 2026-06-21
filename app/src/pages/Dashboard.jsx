@@ -166,14 +166,14 @@ export default function Dashboard() {
             <div className="summary-cards" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
               {/* Portfolio Summary — big card */}
               <div style={{
-                background: 'linear-gradient(135deg, #1a2e4a 0%, #111827 100%)',
+                background: 'linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%)',
                 border: '1px solid rgba(59,130,246,0.25)',
                 borderRadius: 10, padding: '22px 28px',
                 display: 'flex', gap: 0,
               }}>
                 {/* Left: main value */}
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
                     Total Portfolio
                   </div>
                   <div style={{ fontSize: 34, fontWeight: 700, lineHeight: 1.1 }}>
@@ -189,10 +189,10 @@ export default function Dashboard() {
                       {portfolioGrowth >= 0 ? '+' : ''}{portfolioGrowth.toFixed(2)}% all time
                     </div>
                   </div>
-                  {isGuest && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 8 }}>Create an account to save progress.</div>}
+                  {isGuest && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>Create an account to save progress.</div>}
                 </div>
                 {/* Right: breakdown */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, justifyContent: 'center', paddingLeft: 28, borderLeft: '1px solid rgba(255,255,255,0.07)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, justifyContent: 'center', paddingLeft: 28, borderLeft: '1px solid var(--border)' }}>
                   {[
                     { label: 'Cash', val: `$${Number(profile?.current_balance || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}`, color: 'var(--blue)' },
                     { label: 'Invested', val: `$${totalInvestedValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}`, color: 'var(--text)' },
@@ -200,7 +200,7 @@ export default function Dashboard() {
                     { label: 'Holdings', val: holdings.length, color: 'var(--text)' },
                   ].map(s => (
                     <div key={s.label} style={{ minWidth: 130 }}>
-                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: 0.8 }}>{s.label}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.8 }}>{s.label}</div>
                       <div style={{ fontSize: 15, fontWeight: 700, color: s.color, marginTop: 1 }}>{s.val}</div>
                     </div>
                   ))}

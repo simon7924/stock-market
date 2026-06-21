@@ -126,7 +126,7 @@ export default function StockDetails() {
                 </div>
                 <ResponsiveContainer width="100%" height={280}>
                   <LineChart data={series}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                     <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 11 }} tickLine={false} axisLine={false}
                       tickFormatter={d => d?.split(' ')[0]?.slice(5)} interval="preserveStartEnd" />
                     <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} tickLine={false} axisLine={false}

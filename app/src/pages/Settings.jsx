@@ -1,57 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import { useAuth } from '../context/AuthContext'
 import { usePortfolio } from '../context/PortfolioContext'
 import Modal, { ModalHeader, ModalFooter, WarningBox } from '../components/Modal'
+import { loadAppearance, saveAppearance, applyAccent, applyDarkMode } from '../lib/appearance'
 
 const CATEGORIES = ['Account', 'Portfolio', 'Appearance', 'Notifications', 'Privacy']
 
 const ACCENT_COLORS = ['#3b82f6', '#22c55e', '#8b5cf6', '#f97316']
-
-// Persist appearance settings in localStorage
-function loadAppearance() {
-  try {
-    return JSON.parse(localStorage.getItem('stocksim_appearance') || '{}')
-  } catch { return {} }
-}
-
-function saveAppearance(val) {
-  localStorage.setItem('stocksim_appearance', JSON.stringify(val))
-}
-
-// Apply accent color to CSS variable
-function applyAccent(color) {
-  document.documentElement.style.setProperty('--blue', color)
-  // Recompute glow color from hex
-  const r = parseInt(color.slice(1, 3), 16)
-  const g = parseInt(color.slice(3, 5), 16)
-  const b = parseInt(color.slice(5, 7), 16)
-  document.documentElement.style.setProperty('--blue-glow', `rgba(${r},${g},${b},0.25)`)
-}
-
-// Apply dark/light mode
-function applyDarkMode(dark) {
-  if (dark) {
-    document.documentElement.style.setProperty('--bg', '#0f1115')
-    document.documentElement.style.setProperty('--panel', '#151922')
-    document.documentElement.style.setProperty('--card', '#1b2230')
-    document.documentElement.style.setProperty('--border', 'rgba(255,255,255,0.06)')
-    document.documentElement.style.setProperty('--border-hover', 'rgba(255,255,255,0.12)')
-    document.documentElement.style.setProperty('--text', '#ffffff')
-    document.documentElement.style.setProperty('--text-secondary', '#b0bac8')
-    document.documentElement.style.setProperty('--text-muted', '#868f9e')
-  } else {
-    document.documentElement.style.setProperty('--bg', '#f0f2f5')
-    document.documentElement.style.setProperty('--panel', '#ffffff')
-    document.documentElement.style.setProperty('--card', '#f8fafc')
-    document.documentElement.style.setProperty('--border', 'rgba(0,0,0,0.08)')
-    document.documentElement.style.setProperty('--border-hover', 'rgba(0,0,0,0.16)')
-    document.documentElement.style.setProperty('--text', '#0f172a')
-    document.documentElement.style.setProperty('--text-secondary', '#475569')
-    document.documentElement.style.setProperty('--text-muted', '#94a3b8')
-  }
-}
 
 export default function Settings() {
   const navigate = useNavigate()
@@ -67,14 +24,6 @@ export default function Settings() {
   const [darkMode, setDarkMode] = useState(saved.darkMode !== false)
   const [accentColor, setAccentColor] = useState(saved.accentColor || '#3b82f6')
   const [graphAnimations, setGraphAnimations] = useState(saved.graphAnimations !== false)
-
-  // Apply saved appearance on mount
-  useEffect(() => {
-    applyDarkMode(darkMode)
-    applyAccent(accentColor)
-    // Store graphAnimations globally so charts can read it
-    window.__stocksimGraphAnimations = graphAnimations
-  }, [])
 
   function toggleDarkMode() {
     const next = !darkMode
@@ -221,7 +170,7 @@ export default function Settings() {
                       <div onClick={toggleDarkMode}
                         style={{
                           width: 48, height: 26, borderRadius: 13, cursor: 'pointer',
-                          background: darkMode ? 'var(--blue)' : 'rgba(255,255,255,0.15)',
+                          background: darkMode ? 'var(--blue)' : 'var(--toggle-off)',
                           position: 'relative', transition: 'background 0.2s', flexShrink: 0,
                         }}>
                         <div style={{
@@ -262,7 +211,7 @@ export default function Settings() {
                       <div onClick={toggleGraphAnimations}
                         style={{
                           width: 48, height: 26, borderRadius: 13, cursor: 'pointer',
-                          background: graphAnimations ? 'var(--blue)' : 'rgba(255,255,255,0.15)',
+                          background: graphAnimations ? 'var(--blue)' : 'var(--toggle-off)',
                           position: 'relative', transition: 'background 0.2s', flexShrink: 0,
                         }}>
                         <div style={{
@@ -296,7 +245,7 @@ export default function Settings() {
                         <div onClick={() => setNotifications(p => ({ ...p, [n.key]: !p[n.key] }))}
                           style={{
                             width: 48, height: 26, borderRadius: 13, cursor: 'pointer', transition: 'background 0.2s',
-                            background: notifications[n.key] ? 'var(--blue)' : 'rgba(255,255,255,0.1)',
+                            background: notifications[n.key] ? 'var(--blue)' : 'var(--toggle-off)',
                             position: 'relative', flexShrink: 0,
                           }}>
                           <div style={{

@@ -1,7 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles/globals.css'
+import { initAppearance } from './lib/appearance'
 import App from './App.jsx'
+
+initAppearance()
 import { AuthProvider } from './context/AuthContext'
 import { PortfolioProvider } from './context/PortfolioContext'
 import { ToastProvider } from './components/Toast'
